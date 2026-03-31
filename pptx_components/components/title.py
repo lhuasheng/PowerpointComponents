@@ -61,12 +61,17 @@ class SectionHeader(Component):
         bar_w = 0.05
         pad = t.SM
 
+        # Estimate badge width from text length to avoid clipping long labels.
+        badge_w = 0.0
+        if self.badge_text:
+            est = 0.65 + (0.07 * len(self.badge_text))
+            badge_w = max(1.3, min(2.4, est))
+
         # Left accent bar
         add_accent_bar(slide, x, y, height, t, width=bar_w)
 
         # Header text
         text_x = x + bar_w + pad
-        badge_w = 1.3
         text_w = width - bar_w - pad - (badge_w + pad if self.badge_text else 0)
         add_text_box(slide, text_x, y, text_w, height,
                      self.text, t.HEADING, bold=True,

@@ -42,7 +42,7 @@ class Timeline(Component):
             return t.ACCENT
         if status == "risk":
             return t.NEGATIVE
-        return t.SURFACE_ALT
+        return t.TEXT_MUTED
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
