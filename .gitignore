@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build and tooling artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+
+# Generated demo export images
+examples/*_slides/
+
+# Microsoft Office temporary lock files
+~$*.pptx
