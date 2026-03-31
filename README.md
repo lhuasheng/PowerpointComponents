@@ -4,6 +4,8 @@ Composable Python primitives for building modern PowerPoint decks with `python-p
 
 This project provides a component system (cards, charts, tables, lists, callouts, navigation patterns, media blocks) plus a `SlideBuilder` cursor API so slides can be assembled quickly without hard-coding every coordinate.
 
+![PowerpointComponents hero snapshot](docs/readme_assets/hero_snapshot.png)
+
 ## Features
 
 - Theme system with `DarkTheme` and `LightTheme`
@@ -11,6 +13,12 @@ This project provides a component system (cards, charts, tables, lists, callouts
 - Reusable UI components (title, metrics, tables, charts, lists, callouts, progress, navigation)
 - New dashboard primitives: `ImageBlock`, `Legend`, `KPIGrid`
 - Windows PowerPoint COM export utility for PPTX -> PNG
+
+## Snapshot Gallery
+
+Representative slides from the demo deck, exported to PNG and composed for GitHub-friendly previewing.
+
+![PowerpointComponents component gallery](docs/readme_assets/component_gallery.png)
 
 ## Install
 

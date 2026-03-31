@@ -22,6 +22,7 @@ from pptx_components.components.range_indicator import RangeIndicator
 from pptx_components.components.code_block import CodeBlock
 from pptx_components.components.annotation import Annotation
 from pptx_components.components.waterfall import WaterfallChart
+from pptx_components.components.text_card import TextCard
 from pptx_components.export import export_slides
 
 __all__ = [
@@ -41,5 +42,6 @@ __all__ = [
     "ImageBlock", "Legend", "KPIGrid",
     "Timeline", "ComparisonPanel",
     "Heatmap", "RangeIndicator", "CodeBlock", "Annotation", "WaterfallChart",
+    "TextCard",
     "export_slides",
 ]
