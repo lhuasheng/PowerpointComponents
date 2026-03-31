@@ -47,9 +47,11 @@ class TitleBlock(Component):
 class SectionHeader(Component):
     """Horizontal section break with left accent bar and optional right-aligned badge."""
 
-    def __init__(self, text: str, badge_text: str | None = None):
+    def __init__(self, text: str, badge_text: str | None = None,
+                 badge_width: float | None = None):
         self.text = text
         self.badge_text = badge_text
+        self.badge_width = badge_width
 
     @property
     def min_height(self) -> float:
@@ -64,8 +66,11 @@ class SectionHeader(Component):
         # Estimate badge width from text length to avoid clipping long labels.
         badge_w = 0.0
         if self.badge_text:
-            est = 0.65 + (0.07 * len(self.badge_text))
-            badge_w = max(1.3, min(2.4, est))
+            if self.badge_width is not None:
+                badge_w = self.badge_width
+            else:
+                est = 0.65 + (0.07 * len(self.badge_text))
+                badge_w = max(1.3, min(2.4, est))
 
         # Left accent bar
         add_accent_bar(slide, x, y, height, t, width=bar_w)

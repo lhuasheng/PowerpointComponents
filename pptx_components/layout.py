@@ -74,11 +74,7 @@ class Column(Component):
 
     @property
     def min_height(self) -> float:
-        # Will be resolved at render time against theme; return raw sum with SM gap
-        from pptx_components.theme import get_theme
-        t = get_theme()
-        gap = self._gap_val(t)
-        return sum(c.min_height for c in self.components) + gap * (len(self.components) - 1)
+        return sum(c.min_height for c in self.components) + 0.2 * (len(self.components) - 1)
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
@@ -123,9 +119,7 @@ class Grid(Component):
 
     @property
     def min_height(self) -> float:
-        from pptx_components.theme import get_theme
-        t = get_theme()
-        row_gap = self._row_gap_val(t)
+        row_gap = self._row_gap if self._row_gap is not None else 0.2
         rows = self._row_count()
         # Compute max height per row
         total = 0.0

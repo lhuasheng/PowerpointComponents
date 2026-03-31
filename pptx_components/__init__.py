@@ -6,7 +6,7 @@ from pptx_components.slide_builder import SlideBuilder
 from pptx_components.components.title import TitleBlock, SectionHeader
 from pptx_components.components.metric import MetricCard, BigStat
 from pptx_components.components.table import DataTable
-from pptx_components.components.chart import BarChart, LineChart, PieChart
+from pptx_components.components.chart import BarChart, LineChart, PieChart, ScatterChart
 from pptx_components.components.list import ListBlock
 from pptx_components.components.callout import CalloutBox, QuoteBlock
 from pptx_components.components.divider import Divider, Spacer
@@ -23,6 +23,11 @@ from pptx_components.components.code_block import CodeBlock
 from pptx_components.components.annotation import Annotation
 from pptx_components.components.waterfall import WaterfallChart
 from pptx_components.components.text_card import TextCard
+from pptx_components.components.scatter import ScatterPlot
+from pptx_components.components.grouped_table import GroupedTable
+from pptx_components.components.animation import (
+    AnimationConfig, FadeInEffect, SlideInEffect, GrowEffect, SequenceAnimation
+)
 from pptx_components.export import export_slides
 
 __all__ = [
@@ -33,7 +38,7 @@ __all__ = [
     "TitleBlock", "SectionHeader",
     "MetricCard", "BigStat",
     "DataTable",
-    "BarChart", "LineChart", "PieChart",
+    "BarChart", "LineChart", "PieChart", "ScatterChart",
     "ListBlock",
     "CalloutBox", "QuoteBlock",
     "Divider", "Spacer",
@@ -42,6 +47,6 @@ __all__ = [
     "ImageBlock", "Legend", "KPIGrid",
     "Timeline", "ComparisonPanel",
     "Heatmap", "RangeIndicator", "CodeBlock", "Annotation", "WaterfallChart",
-    "TextCard",
-    "export_slides",
+    "TextCard",    "ScatterPlot", "GroupedTable",
+    "AnimationConfig", "FadeInEffect", "SlideInEffect", "GrowEffect", "SequenceAnimation",    "export_slides",
 ]

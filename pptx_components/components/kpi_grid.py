@@ -30,17 +30,17 @@ class KPIGrid(Component):
         self.cols = cols
         self.col_gap = col_gap
         self.row_gap = row_gap
-
-    def _as_grid(self) -> Grid:
-        cards = [MetricCard(label, value, delta=delta, delta_positive=delta_positive)
-                 for label, value, delta, delta_positive in self.metrics]
-        return Grid(cards, cols=self.cols, col_gap=self.col_gap, row_gap=self.row_gap)
+        self._grid = Grid(
+            [MetricCard(label, value, delta=delta, delta_positive=dp)
+             for label, value, delta, dp in self.metrics],
+            cols=self.cols, col_gap=self.col_gap, row_gap=self.row_gap
+        )
 
     @property
     def min_height(self) -> float:
-        return self._as_grid().min_height
+        return self._grid.min_height
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
         t = _resolve(theme)
-        self._as_grid().render(slide, x, y, width, height, theme=t)
+        self._grid.render(slide, x, y, width, height, theme=t)

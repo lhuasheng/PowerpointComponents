@@ -14,11 +14,18 @@ from pptx_components.theme import Theme
 class MetricCard(Component):
     """KPI card with label, value, and optional delta indicator.
 
+    Renders a compact metric display with accent bar, value, and optional directional delta.
+    Useful for dashboards, executive summaries, and data-driven storytelling.
+
     Args:
         label: The metric name (e.g. "Revenue").
-        value: The formatted value string (e.g. "$1.2M").
-        delta: Pre-formatted change string (e.g. "+18%"). Caller owns formatting.
-        delta_positive: Explicit direction — True=green, False=red, None=neutral.
+        value: The formatted value string (e.g. "$1.2M"). Caller owns formatting.
+        delta: Pre-formatted change string (e.g. "+18%", "-5.2%"). Optional.
+        delta_positive: Sentiment direction — True=positive (green), False=negative (red), None=neutral.
+
+    Example:
+        >>> builder.add(MetricCard("Revenue", "$1.2M", "+18%", True))
+        >>> builder.add(MetricCard("Churn", "3.1%", "+0.2pp", False))
     """
 
     def __init__(self, label: str, value: str,

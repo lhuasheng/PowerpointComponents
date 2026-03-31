@@ -164,6 +164,11 @@ _active_theme: Theme = DarkTheme()
 
 
 def set_theme(theme: Theme) -> None:
+    """Set the active global theme.
+
+    Warning: not safe for concurrent use. For concurrent/async contexts, pass theme=
+    explicitly to SlideBuilder and component render() calls instead of using the global.
+    """
     global _active_theme
     _active_theme = theme
 

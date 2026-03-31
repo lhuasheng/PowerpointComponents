@@ -1,7 +1,7 @@
 """Chart data helpers — pure data transformation, no python-pptx shapes here."""
 from __future__ import annotations
 
-from pptx.chart.data import ChartData, CategoryChartData
+from pptx.chart.data import ChartData, CategoryChartData, XyChartData
 
 
 def chart_data_from(categories: list[str],
@@ -25,4 +25,14 @@ def pie_data_from(categories: list[str],
     cd = ChartData()
     cd.categories = categories
     cd.add_series("", values)
+    return cd
+
+
+def scatter_data_from(series: dict[str, list[tuple[float, float]]]) -> XyChartData:
+    """Build an XyChartData object for scatter charts."""
+    cd = XyChartData()
+    for name, points in series.items():
+        s = cd.add_series(name)
+        for x, y in points:
+            s.add_data_point(x, y)
     return cd

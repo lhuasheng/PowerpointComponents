@@ -393,7 +393,7 @@ def slide_13_code_annotation(prs: Presentation) -> None:
             pc.Spacer(0.18),
             pc.Annotation("Mismatched weights cause rendering issues — validate inputs.", style="warning", pointer="left"),
         ),
-        h=4.5,
+        h=4.7,
         weights=[1.4, 1.0],
     )
 
@@ -458,6 +458,127 @@ def slide_15_accordion_features(prs: Presentation) -> None:
     )
 
 
+def slide_16_scatter_plot(prs: Presentation) -> None:
+    """Slide 16 - ScatterPlot component for correlation analysis."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 4: Advanced Charts", badge_text="ScatterPlot"))
+    b.skip(0.1)
+    
+    scatter_points = [
+        (2.5, 75, "Low cost", (100, 200, 255), 0.18),
+        (4.2, 88, "Best performer", (100, 200, 255), 0.2),
+        (3.1, 72, "Mid-range", (100, 200, 255), 0.17),
+        (5.8, 82, "High complexity", (255, 150, 100), 0.18),
+        (1.5, 65, "Simple", (150, 255, 100), 0.16),
+    ]
+    
+    b.add(
+        pc.ScatterPlot(
+            points=scatter_points,
+            x_label="Implementation Complexity",
+            y_label="Accuracy (%)",
+            title="Algorithm Performance Landscape",
+            x_range=(1.0, 6.5),
+            y_range=(60, 95),
+            show_grid=True,
+            quadrant_labels=("Best\n(Simple & Accurate)", "High Effort", "Avoid", "Feasible"),
+        ),
+        h=3.5,
+    )
+
+
+def slide_17_grouped_table(prs: Presentation) -> None:
+    """Slide 17 - GroupedTable for hierarchical data."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 4: Hierarchical Data", badge_text="GroupedTable"))
+    b.skip(0.1)
+    
+    groups_data = [
+        {
+            "header": ("NORTH AMERICA", "$580M", "$715M", "+23%"),
+            "rows": [
+                ("USA", "$500M", "$620M", "+24%"),
+                ("Canada", "$80M", "$95M", "+19%"),
+            ],
+            "footer": ("SubtotalNA", "$580M", "$715M", "+23%"),
+        },
+        {
+            "header": ("EMEA", "$350M", "$425M", "+21%"),
+            "rows": [
+                ("UK", "$200M", "$245M", "+22%"),
+                ("France", "$150M", "$180M", "+20%"),
+            ],
+            "footer": ("SubtotalEMEA", "$350M", "$425M", "+21%"),
+        },
+        {
+            "header": ("APAC", "$220M", "$285M", "+30%"),
+            "rows": [
+                ("India", "$120M", "$165M", "+38%"),
+                ("Australia", "$100M", "$120M", "+20%"),
+            ],
+            "footer": ("SubtotalAPAC", "$220M", "$285M", "+30%"),
+        },
+    ]
+    
+    b.add(
+        pc.GroupedTable(
+            columns=["Region", "2025 Revenue", "2026 Revenue", "YoY Growth"],
+            groups=groups_data,
+            title="Revenue by Region & Country",
+            column_widths=[2.0, 1.5, 1.5, 1.0],
+            show_dividers=True,
+        ),
+        h=3.8,
+    )
+
+
+def slide_18_animations(prs: Presentation) -> None:
+    """Slide 18 - Animation effects (FadeInEffect, SlideInEffect, GrowEffect)."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 4: Animation & Transitions", badge_text="Effects"))
+    b.skip(0.15)
+    
+    # Example 1: Fade-in title
+    b.add(
+        pc.FadeInEffect(
+            pc.TitleBlock("Welcome!", "This title fades in (static → see rendered output)"),
+            pc.AnimationConfig(duration_ms=800, frames=10, easing="ease_out"),
+        ),
+        h=0.7,
+    )
+    b.skip(0.2)
+    
+    # Example 2 & 3: Slide-in metrics
+    b.add_row(
+        pc.SlideInEffect(
+            pc.MetricCard("Engagement", "92%", "+5pp", True),
+            direction="left",
+            config=pc.AnimationConfig(duration_ms=600, frames=8, easing="ease_out"),
+        ),
+        pc.GrowEffect(
+            pc.MetricCard("Accuracy", "87%", "+8%", True),
+            config=pc.AnimationConfig(duration_ms=700, frames=10, easing="ease_out"),
+        ),
+        pc.SlideInEffect(
+            pc.MetricCard("Adoption", "72%", "+12%", True),
+            direction="right",
+            config=pc.AnimationConfig(duration_ms=600, frames=8, easing="ease_out"),
+        ),
+        h=1.2,
+    )
+    b.skip(0.25)
+    
+    b.add(
+        pc.TextCard(
+            "Note: python-pptx does not natively support embedded slide animations. "
+            "Animation effects render at their end state in static PowerPoint. "
+            "For true animations, export slides to PNG via render_frame() or use PowerPoint GUI.",
+            style="muted",
+        ),
+        h=1.0,
+    )
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 SLIDES = [
@@ -476,6 +597,9 @@ SLIDES = [
     slide_13_code_annotation,
     slide_14_waterfall,
     slide_15_accordion_features,
+    slide_16_scatter_plot,
+    slide_17_grouped_table,
+    slide_18_animations,
 ]
 
 
