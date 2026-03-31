@@ -68,6 +68,54 @@ BUILD_VS_BUY_RIGHT = [
     "Less flexibility on edge cases",
 ]
 
+# Phase 3 data ──────────────────────────────────────────────────────────────
+
+HEATMAP_MATRIX = [
+    [87, 91, 78, 95],
+    [72, 68, 81, 74],
+    [95, 97, 93, 99],
+    [61, 55, 70, 63],
+]
+HEATMAP_ROWS = ["Mobile", "Web", "API", "Reports"]
+HEATMAP_COLS = ["Q1", "Q2", "Q3", "Q4"]
+
+RANGE_SEGMENTS_LATENCY = [
+    (150, "OK", "ok"),
+    (300, "Warn", "warn"),
+    (600, "Critical", "error"),
+]
+
+RANGE_SEGMENTS_ERROR = [
+    (1.0, "OK", "ok"),
+    (3.0, "Warn", "warn"),
+    (10.0, "Critical", "error"),
+]
+
+RANGE_SEGMENTS_UPTIME = [
+    (95.0, "Below SLA", "error"),
+    (99.0, "Degraded", "warn"),
+    (100.0, "Healthy", "ok"),
+]
+
+DEMO_CODE = """\
+import pptx_components as pc
+
+builder = pc.SlideBuilder(prs)
+builder.add(pc.SectionHeader("My Slide", badge_text="v1.0"))
+builder.skip(0.2)
+builder.add_row(
+    pc.MetricCard("Revenue", "$1.2M", "+12%", True),
+    pc.MetricCard("Churn",   "3.1%",  "+0.2pp", False),
+    h=1.5,
+)
+builder.add(
+    pc.BarChart(months, data, title="Monthly Trend"),
+    h=2.8,
+)"""
+
+WATERFALL_CATS = ["Base", "New Logos", "Upsell", "Expansion", "Churn", "Discounts"]
+WATERFALL_VALS = [500, 120, 85, 40, -60, -35]
+
 
 # ── Slide factory functions (theme-agnostic) ───────────────────────────────
 
@@ -304,6 +352,112 @@ def slide_11_timeline_comparison(prs: Presentation) -> None:
     )
 
 
+def slide_12_heatmap_range(prs: Presentation) -> None:
+    """Slide 12 - Heatmap data grid + RangeIndicator SLA gauges."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 3 Additions", badge_text="Heatmap + Range"))
+    b.skip(0.1)
+    b.add(
+        pc.Heatmap(
+            HEATMAP_MATRIX,
+            HEATMAP_ROWS,
+            HEATMAP_COLS,
+            title="Feature Adoption Score by Platform & Quarter (%)",
+            colormap="sequential",
+            show_values=True,
+        ),
+        h=pc.Heatmap(HEATMAP_MATRIX, HEATMAP_ROWS, HEATMAP_COLS).min_height,
+    )
+    b.skip(0.15)
+    b.add_row(
+        pc.RangeIndicator("API Latency (ms)", 210, RANGE_SEGMENTS_LATENCY),
+        pc.RangeIndicator("Error Rate (%)", 2.1, RANGE_SEGMENTS_ERROR),
+        pc.RangeIndicator("Uptime (%)", 98.5, RANGE_SEGMENTS_UPTIME, min_value=90.0),
+        h=pc.RangeIndicator("x", 0, RANGE_SEGMENTS_LATENCY).min_height,
+    )
+
+
+def slide_13_code_annotation(prs: Presentation) -> None:
+    """Slide 13 - CodeBlock + Annotation stack side by side."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 3 Additions", badge_text="Code + Annotations"))
+    b.skip(0.12)
+    b.add_row(
+        pc.CodeBlock(DEMO_CODE, language="Python", show_line_numbers=True),
+        pc.Column(
+            pc.Annotation("Use SlideBuilder to compose slides with rows, columns, and grids.", style="note", pointer="left"),
+            pc.Spacer(0.18),
+            pc.Annotation("add_row() automatically distributes width equally.", style="highlight", pointer="left"),
+            pc.Spacer(0.18),
+            pc.Annotation("set h= to control the rendered height of each component.", style="info", pointer="left"),
+            pc.Spacer(0.18),
+            pc.Annotation("Mismatched weights cause rendering issues — validate inputs.", style="warning", pointer="left"),
+        ),
+        h=4.5,
+        weights=[1.4, 1.0],
+    )
+
+
+def slide_14_waterfall(prs: Presentation) -> None:
+    """Slide 14 - WaterfallChart P&L breakdown."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Revenue Bridge — H1 2026", badge_text="WaterfallChart"))
+    b.skip(0.1)
+    b.add(
+        pc.WaterfallChart(
+            WATERFALL_CATS,
+            WATERFALL_VALS,
+            title="Revenue Contribution by Category ($K)",
+            show_total=True,
+            total_label="Net Revenue",
+        ),
+        h=4.2,
+    )
+
+
+def slide_15_accordion_features(prs: Presentation) -> None:
+    """Slide 15 - AccordionBlock (FAQ) and FeatureGrid (product showcase)."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Additional React Patterns", badge_text="Accordion + Features"))
+    b.skip(0.15)
+    
+    faq_items = [
+        ("How do we scale headcount?", 
+         "Hiring plan targets 40% growth in engineering and product through Q4 2026. "
+         "Focus on mid/senior IC roles and two new manager positions."),
+        ("What's our go-to-market strategy?",
+         "Product-led growth with freemium tier expansion. Expected 30% conversion uplift "
+         "from self-serve trial v2 launching in July."),
+        ("How do we reduce churn?",
+         "Retention playbook rolled out April 2026. Early wins: NPS moved from 62→68, "
+         "churn rate stabilized week-over-week."),
+    ]
+    b.add(
+        pc.AccordionBlock(
+            faq_items,
+            expanded_index=0,
+            title="Accordion (FAQ Pattern / MUI inspired)",
+        ),
+        h=2.1,
+    )
+    b.skip(0.25)
+    b.add(
+        pc.FeatureGrid(
+            [
+                ("⚡", "Real-time Sync", "Data synchronizes across all endpoints instantly."),
+                ("🔒", "Enterprise Security", "SOC 2 Type II certified infrastructure."),
+                ("📊", "Rich Analytics", "Comprehensive dashboards and custom reporting."),
+                ("🌍", "Global Scale", "Multi-region deployment with 99.99% SLA."),
+                ("🤝", "API-First", "Full REST + GraphQL coverage for integrations."),
+                ("💬", "24/7 Support", "Dedicated account team for enterprise clients."),
+            ],
+            columns=3,
+            title="FeatureGrid (Product Showcase Pattern)",
+        ),
+        h=2.2,
+    )
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 SLIDES = [
@@ -318,6 +472,10 @@ SLIDES = [
     slide_9_navigation,
     slide_10_new_primitives,
     slide_11_timeline_comparison,
+    slide_12_heatmap_range,
+    slide_13_code_annotation,
+    slide_14_waterfall,
+    slide_15_accordion_features,
 ]
 
 
