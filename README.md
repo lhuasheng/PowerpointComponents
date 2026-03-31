@@ -161,6 +161,12 @@ examples/
   demo.py
 ```
 
+## Component Docs
+
+- `docs/components/README.md`
+- `docs/components/REFERENCE.md`
+- `docs/components/PATTERNS.md`
+
 ## Notes
 
 - Slide export uses Microsoft PowerPoint COM automation and is Windows-only.
