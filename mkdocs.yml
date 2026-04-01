@@ -50,10 +50,11 @@ extra_css:
   - stylesheets/extra.css
 
 nav:
-  - Home: index.md
+  - Home:
+      - Overview: index.md
+      - Visual Gallery: components/visual_gallery.md
   - Components:
       - Overview: components/README.md
-      - Visual Gallery: components/visual_gallery.md
       - Text Box: components/text_box.md
       - Chart: components/chart.md
       - Module Catalog:

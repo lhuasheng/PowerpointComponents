@@ -6,11 +6,11 @@ Text-focused components for narrative surfaces, headers, and structured copy.
 
 <div class="shot-grid">
 	<figure>
-		<img src="https://raw.githubusercontent.com/lhuasheng/powerpointComponents/main/examples/demo_dark_slides/slide_005.png" alt="Dark theme text-focused roadmap slide" />
+		<img src="../../assets/examples/dark/slide_005.png" alt="Dark theme text-focused roadmap slide" />
 		<figcaption>List and narrative-heavy layout in dark theme.</figcaption>
 	</figure>
 	<figure>
-		<img src="https://raw.githubusercontent.com/lhuasheng/powerpointComponents/main/examples/demo_light_slides/slide_005.png" alt="Light theme text-focused roadmap slide" />
+		<img src="../../assets/examples/light/slide_005.png" alt="Light theme text-focused roadmap slide" />
 		<figcaption>Equivalent light theme layout for reports and executive decks.</figcaption>
 	</figure>
 </div>

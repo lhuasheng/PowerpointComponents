@@ -54,11 +54,11 @@ Open http://127.0.0.1:8000
 
 <div class="shot-grid">
 	<figure>
-		<img src="https://raw.githubusercontent.com/lhuasheng/powerpointComponents/main/examples/demo_dark_slides/slide_011.png" alt="Dark theme timeline and chart slide" />
+		<img src="assets/examples/dark/slide_011.png" alt="Dark theme timeline and chart slide" />
 		<figcaption>Dark theme: timeline, comparison cards, and chart composition.</figcaption>
 	</figure>
 	<figure>
-		<img src="https://raw.githubusercontent.com/lhuasheng/powerpointComponents/main/examples/demo_light_slides/slide_011.png" alt="Light theme timeline and chart slide" />
+		<img src="assets/examples/light/slide_011.png" alt="Light theme timeline and chart slide" />
 		<figcaption>Light theme: same composition with a neutral presentation surface.</figcaption>
 	</figure>
 </div>
