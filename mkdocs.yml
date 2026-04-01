@@ -58,7 +58,6 @@ nav:
       - Chart: components/chart.md
       - Module Catalog:
           - Index: components/modules/index.md
-          - animation.py: components/modules/animation.md
           - annotation.py: components/modules/annotation.md
           - callout.py: components/modules/callout.md
           - chart.py: components/modules/chart.md

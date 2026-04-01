@@ -567,12 +567,13 @@ class FeatureGrid(Component):
             )
 
             title_y = icon_y + icon_sz + t.SM
+            title_h = 0.25
             add_text_box(
                 slide,
                 feat_x + pad,
                 title_y,
                 col_w - 2 * pad,
-                0.25,
+                title_h,
                 feat_title,
                 t.BODY,
                 bold=True,
@@ -581,18 +582,21 @@ class FeatureGrid(Component):
                 font_name="Calibri",
             )
 
-            desc_y = title_y + 0.25 + t.XS
-            desc_h = self.FEATURE_H - (desc_y - feat_y) - pad
-            add_text_box(
-                slide,
-                feat_x + pad,
-                desc_y,
-                col_w - 2 * pad,
-                desc_h,
-                feat_desc,
-                t.CAPTION,
-                color_rgb=t.TEXT_SECONDARY,
-                alignment=PP_ALIGN.CENTER,
-                font_name="Calibri",
-                word_wrap=True,
-            )
+            # Guard against negative text box heights, which produce invalid slide XML.
+            desc_y = title_y + title_h + t.XS
+            desc_bottom = feat_y + self.FEATURE_H - pad
+            desc_h = max(0.0, desc_bottom - desc_y)
+            if desc_h > 0.0:
+                add_text_box(
+                    slide,
+                    feat_x + pad,
+                    desc_y,
+                    col_w - 2 * pad,
+                    desc_h,
+                    feat_desc,
+                    t.CAPTION,
+                    color_rgb=t.TEXT_SECONDARY,
+                    alignment=PP_ALIGN.CENTER,
+                    font_name="Calibri",
+                    word_wrap=True,
+                )

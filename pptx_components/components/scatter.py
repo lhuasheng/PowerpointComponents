@@ -122,7 +122,7 @@ class ScatterPlot(Component):
         if self.title:
             add_text_box(
                 slide, x, cursor_y, width, self.TITLE_H,
-                self.title, 28, bold=True,
+                self.title, t.SUBHEADING, bold=True,
                 color_rgb=t.TEXT_PRIMARY,
                 alignment=PP_ALIGN.CENTER
             )
@@ -161,7 +161,7 @@ class ScatterPlot(Component):
             ]:
                 add_text_box(
                     slide, qx, qy, q_x - plot_x, plot_h / 2,
-                    label, 10,
+                    label, t.CAPTION,
                     color_rgb=t.TEXT_MUTED,
                     alignment=PP_ALIGN.CENTER
                 )
@@ -190,7 +190,7 @@ class ScatterPlot(Component):
             if label:
                 add_text_box(
                     slide, pt_x + size / 2 + 0.05, pt_y - 0.1, 0.6, 0.2,
-                    label, 9,
+                    label, t.CAPTION,
                     color_rgb=t.TEXT_PRIMARY
                 )
 
@@ -198,14 +198,14 @@ class ScatterPlot(Component):
         if self.x_label:
             add_text_box(
                 slide, plot_x, plot_y + plot_h + 0.05, plot_w, self.LABEL_H,
-                self.x_label, 11,
+                self.x_label, t.CAPTION,
                 color_rgb=t.TEXT_MUTED,
                 alignment=PP_ALIGN.CENTER
             )
         if self.y_label:
             add_text_box(
                 slide, x, plot_y, 0.35, plot_h,
-                self.y_label, 11,
+                self.y_label, t.CAPTION,
                 color_rgb=t.TEXT_MUTED,
                 alignment=PP_ALIGN.CENTER
             )

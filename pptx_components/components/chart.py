@@ -81,25 +81,41 @@ def _style_chart(chart, t: Theme, title: str | None,
         chart.legend.font.size = Pt(t.CAPTION)
 
     # ── Axis labels and tick marks ─────────────────────────────────────
-    try:
-        cat_axis = chart.category_axis
-        cat_axis.tick_labels.font.color.rgb = RGBColor(*t.TEXT_SECONDARY)
-        cat_axis.tick_labels.font.size = Pt(t.CAPTION)
-        cat_axis.tick_labels.font.name = "Calibri"
-        cat_axis.format.line.color.rgb = RGBColor(*t.SURFACE_ALT)
-        cat_axis.has_major_gridlines = False
-    except Exception:
-        pass  # pie charts have no axes
+    def _style_axis(axis, show_gridlines: bool) -> None:
+        axis.tick_labels.font.color.rgb = RGBColor(*t.TEXT_SECONDARY)
+        axis.tick_labels.font.size = Pt(t.CAPTION)
+        axis.tick_labels.font.name = "Calibri"
+        axis.format.line.color.rgb = RGBColor(*t.SURFACE_ALT)
+        axis.has_major_gridlines = show_gridlines
+        if show_gridlines:
+            axis.major_gridlines.format.line.color.rgb = RGBColor(*t.SURFACE_ALT)
 
-    try:
-        val_axis = chart.value_axis
-        val_axis.tick_labels.font.color.rgb = RGBColor(*t.TEXT_SECONDARY)
-        val_axis.tick_labels.font.size = Pt(t.CAPTION)
-        val_axis.tick_labels.font.name = "Calibri"
-        val_axis.format.line.color.rgb = RGBColor(*t.SURFACE_ALT)
-        val_axis.major_gridlines.format.line.color.rgb = RGBColor(*t.SURFACE_ALT)
-    except Exception:
-        pass
+    chart_type = chart.chart_type
+    is_scatter = chart_type in {
+        XL_CHART_TYPE.XY_SCATTER,
+        XL_CHART_TYPE.XY_SCATTER_LINES,
+        XL_CHART_TYPE.XY_SCATTER_LINES_NO_MARKERS,
+        XL_CHART_TYPE.XY_SCATTER_SMOOTH,
+        XL_CHART_TYPE.XY_SCATTER_SMOOTH_NO_MARKERS,
+    }
+
+    if is_scatter:
+        try:
+            # In XY charts both axes are value axes; category_axis is the X axis.
+            _style_axis(chart.category_axis, show_gridlines=False)
+            _style_axis(chart.value_axis, show_gridlines=True)
+        except (AttributeError, ValueError):
+            pass
+    else:
+        try:
+            _style_axis(chart.category_axis, show_gridlines=False)
+        except (AttributeError, ValueError):
+            pass  # pie/donut/radar charts have no category axis
+
+        try:
+            _style_axis(chart.value_axis, show_gridlines=True)
+        except (AttributeError, ValueError):
+            pass
 
     # ── Series colors ──────────────────────────────────────────────────
     if is_pie:
@@ -110,14 +126,21 @@ def _style_chart(chart, t: Theme, title: str | None,
             point.format.fill.solid()
             point.format.fill.fore_color.rgb = RGBColor(*color)
     else:
-        series_colors = [t.ACCENT, t.ACCENT_SOFT, t.TEXT_MUTED]
+        series_colors = [
+            t.ACCENT,
+            t.ACCENT_SOFT,
+            (99, 102, 241),
+            (16, 185, 129),
+            (249, 115, 22),
+        ]
         for i, series in enumerate(chart.series):
             color = series_colors[i % len(series_colors)]
             if is_line:
                 # Lines need visible strokes, not fills
                 series.format.line.color.rgb = RGBColor(*color)
                 series.format.line.width = Pt(2.5)
-                series.smooth = True
+                if chart_type == XL_CHART_TYPE.LINE:
+                    series.smooth = True
             else:
                 series.format.fill.solid()
                 series.format.fill.fore_color.rgb = RGBColor(*color)
@@ -184,7 +207,7 @@ class BarChart(Component):
         elif self.mode == "column_clustered":
             chart_type = XL_CHART_TYPE.COLUMN_CLUSTERED
         elif self.stacked:
-            chart_type = XL_CHART_TYPE.BAR_STACKED
+            chart_type = XL_CHART_TYPE.COLUMN_STACKED
         else:
             chart_type = XL_CHART_TYPE.COLUMN_CLUSTERED
         graphic = _add_chart_shape(slide, cd, chart_type, x, y, width, height)
@@ -251,16 +274,12 @@ class ScatterChart(Component):
     Args:
         series: Dict of series name -> list of (x, y) tuples.
         title: Optional chart title.
-        x_label: Optional label for the x-axis.
-        y_label: Optional label for the y-axis.
     """
 
     def __init__(
         self,
         series: dict[str, list[tuple[float, float]]],
         title: str | None = None,
-        x_label: str | None = None,
-        y_label: str | None = None,
     ):
         for name, points in series.items():
             if len(points) < 1:
@@ -277,8 +296,6 @@ class ScatterChart(Component):
                     )
         self.series = series
         self.title = title
-        self.x_label = x_label
-        self.y_label = y_label
 
     @property
     def min_height(self) -> float:
@@ -300,25 +317,3 @@ class ScatterChart(Component):
             ser.marker.format.fill.fore_color.rgb = RGBColor(*color)
             ser.marker.format.line.fill.background()
             ser.format.line.fill.background()
-
-        # Axis labels
-        if self.x_label:
-            try:
-                ax = chart.category_axis
-                ax.has_title = True
-                ax.axis_title.text_frame.text = self.x_label
-                run = ax.axis_title.text_frame.paragraphs[0].runs[0]
-                run.font.size = Pt(t.CAPTION)
-                run.font.color.rgb = RGBColor(*t.TEXT_SECONDARY)
-            except Exception:
-                pass
-        if self.y_label:
-            try:
-                ax = chart.value_axis
-                ax.has_title = True
-                ax.axis_title.text_frame.text = self.y_label
-                run = ax.axis_title.text_frame.paragraphs[0].runs[0]
-                run.font.size = Pt(t.CAPTION)
-                run.font.color.rgb = RGBColor(*t.TEXT_SECONDARY)
-            except Exception:
-                pass

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import sys
 import os
+import zipfile
+import xml.etree.ElementTree as ET
 sys.path.insert(0, os.path.dirname(__file__))
 
 import pytest
@@ -17,30 +19,6 @@ class DenseTheme(pc.BrandTheme):
     """Spacing-dense theme used to verify cascading min-height calculations."""
     MD = 0.1
     SM = 0.1
-
-
-class _DummyComponent(pc.Component):
-    def __init__(self):
-        self.render_calls = 0
-
-    @property
-    def min_height(self) -> float:
-        return 1.0
-
-    def render(self, slide, x: float, y: float, width: float, height: float,
-               theme: pc.Theme | None = None) -> None:
-        self.render_calls += 1
-
-
-class _CustomAnimatable(_DummyComponent):
-    def __init__(self):
-        super().__init__()
-        self.frame_calls: list[int] = []
-        self.config = pc.AnimationConfig(duration_ms=200, frames=4, easing="linear")
-
-    def render_frame(self, slide, x: float, y: float, width: float, height: float,
-                     frame: int, theme: pc.Theme | None = None) -> None:
-        self.frame_calls.append(frame)
 
 
 def test_theme_cascade_min_height_resolution():
@@ -73,42 +51,40 @@ def test_container_local_theme_patch_scope():
     assert local.min_height_for(base) < regular.min_height_for(base)
 
 
-def test_animation_config_rejects_invalid_values():
-    with pytest.raises(ValueError, match="duration_ms"):
-        pc.AnimationConfig(duration_ms=0)
+def test_feature_grid_does_not_emit_negative_shape_extents(tmp_path):
+    """Regression: FeatureGrid should never generate negative shape/text extents."""
+    prs = Presentation()
+    prs.slide_width = Inches(pc.DarkTheme().SLIDE_W)
+    prs.slide_height = Inches(pc.DarkTheme().SLIDE_H)
+    pc.set_theme(pc.DarkTheme())
 
-    with pytest.raises(ValueError, match="frames"):
-        pc.AnimationConfig(frames=1)
-
-    with pytest.raises(ValueError, match="frames"):
-        pc.AnimationConfig(frames=0)
-
-
-def test_render_frame_rejects_out_of_range_frame_index():
-    effect = pc.SlideInEffect(
-        _DummyComponent(),
-        config=pc.AnimationConfig(duration_ms=300, frames=3, easing="linear"),
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Feature Grid Regression"))
+    b.skip(0.15)
+    b.add(
+        pc.FeatureGrid(
+            [
+                ("*", "Feature 1", "First feature description"),
+                ("#", "Feature 2", "Second feature description"),
+                ("+", "Feature 3", "Third feature description"),
+            ],
+            columns=3,
+        ),
+        h=1.8,
     )
 
-    with pytest.raises(ValueError, match="frame"):
-        effect.render_frame(None, 0, 0, 1, 1, -1)
+    output = tmp_path / "feature_grid_regression.pptx"
+    prs.save(output)
 
-    with pytest.raises(ValueError, match="frame"):
-        effect.render_frame(None, 0, 0, 1, 1, 3)
+    with zipfile.ZipFile(output, "r") as zf:
+        root = ET.fromstring(zf.read("ppt/slides/slide1.xml"))
 
-
-def test_sequence_animation_uses_custom_animatable_render_frame():
-    custom = _CustomAnimatable()
-    seq = pc.SequenceAnimation(
-        [(custom, 0)],
-        config=pc.AnimationConfig(duration_ms=300, frames=3, easing="linear"),
-    )
-
-    seq.render_frame(None, 0, 0, 1, 1, 0)
-    seq.render_frame(None, 0, 0, 1, 1, 2)
-
-    assert custom.frame_calls == [0, 3]
-    assert custom.render_calls == 0
+    ns = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+    for ext in root.findall(".//a:ext", ns):
+        cx = int(ext.attrib["cx"])
+        cy = int(ext.attrib["cy"])
+        assert cx >= 0
+        assert cy >= 0
 
 
 def test_new_components():

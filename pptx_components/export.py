@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+import warnings
 
 
 def export_slides(
@@ -107,18 +108,30 @@ def _set_export_dpi(dpi: int) -> None:
         try:
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE)
         except FileNotFoundError:
-            key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
+            warnings.warn(
+                f"Requested dpi={dpi} ignored: registry key not found ({key_path}).",
+                RuntimeWarning,
+                stacklevel=2,
+            )
+            return
         winreg.SetValueEx(key, "ExportBitmapResolution", 0, winreg.REG_DWORD, dpi)
         winreg.CloseKey(key)
-    except Exception:
-        # Non-fatal — PowerPoint will fall back to its default DPI
-        pass
+    except (ImportError, OSError, PermissionError) as exc:
+        warnings.warn(
+            f"Requested dpi={dpi} ignored: could not set ExportBitmapResolution ({exc}).",
+            RuntimeWarning,
+            stacklevel=2,
+        )
 
 
 # ── CLI entry point ────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import argparse
+
+    if sys.platform != "win32":
+        print("Error: pptx_components.export CLI is only supported on Windows (PowerPoint COM required).")
+        raise SystemExit(1)
 
     parser = argparse.ArgumentParser(description="Export PPTX slides to PNG")
     parser.add_argument("pptx", help="Path to .pptx file")

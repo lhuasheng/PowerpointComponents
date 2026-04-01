@@ -5,7 +5,7 @@ from pathlib import Path
 from pptx.dml.color import RGBColor
 from pptx.util import Inches, Pt
 
-from pptx_components.base import Component, _resolve
+from pptx_components.base import Component
 from pptx_components.theme import Theme
 
 
@@ -54,8 +54,6 @@ class ImageBlock(Component):
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
-        _resolve(theme)
-
         p = Path(self.image_path)
         if not p.exists():
             raise FileNotFoundError(f"image_path does not exist: {self.image_path}")

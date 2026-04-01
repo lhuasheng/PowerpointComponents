@@ -116,6 +116,63 @@ builder.add(
 WATERFALL_CATS = ["Base", "New Logos", "Upsell", "Expansion", "Churn", "Discounts"]
 WATERFALL_VALS = [500, 120, 85, 40, -60, -35]
 
+SPARKLINE_ITEMS = [
+    ("Net Revenue", "$1.28M", [0.82, 0.88, 0.93, 1.05, 1.14, 1.28], "+18%", True),
+    ("Pipeline", "$3.4M", [2.4, 2.6, 2.8, 3.0, 3.2, 3.4], "+12%", True),
+    ("Win Rate", "31%", [27, 28, 29, 30, 30, 31], "+2pp", True),
+    ("Ticket Backlog", "42", [63, 58, 54, 49, 45, 42], "-21", True),
+    ("Activation", "68%", [55, 58, 60, 63, 66, 68], "+7pp", True),
+    ("Cloud Spend", "$184K", [170, 176, 181, 189, 186, 184], "-3%", True),
+]
+
+RADAR_AXES = ["Reliability", "Usability", "Security", "Performance", "Extensibility"]
+RADAR_SERIES = {
+    "Current": [78, 82, 88, 75, 69],
+    "Target": [85, 86, 92, 84, 80],
+}
+
+FUNNEL_STAGES = [
+    ("Visitors", 12840, None),
+    ("Qualified", 4820, None),
+    ("Pipeline", 1615, None),
+    ("Closed Won", 412, None),
+]
+
+GANTT_LANES = [
+    (
+        "Platform",
+        [
+            ("Observability", 0.00, 0.32, "done"),
+            ("Data Contracts", 0.28, 0.62, "current"),
+            ("Failover", 0.66, 0.92, "upcoming"),
+        ],
+    ),
+    (
+        "Product",
+        [
+            ("Admin UX", 0.08, 0.34, "done"),
+            ("Usage Alerts", 0.36, 0.63, "current"),
+            ("Self-Serve", 0.70, 0.95, "upcoming"),
+        ],
+    ),
+    (
+        "GTM",
+        [
+            ("Messaging", 0.00, 0.22, "done"),
+            ("Pricing Test", 0.24, 0.52, "current"),
+            ("Partner Pack", 0.58, 0.82, "at_risk"),
+        ],
+    ),
+    (
+        "Ops",
+        [
+            ("SLA Review", 0.12, 0.28, "done"),
+            ("Headcount Plan", 0.31, 0.57, "current"),
+            ("Vendor Audit", 0.62, 0.88, "upcoming"),
+        ],
+    ),
+]
+
 LONG_NARRATIVE_TEXT = """Q2 opened with concentrated enterprise exposure: two strategic accounts represented 28% of net new ARR and introduced procurement timing risk. The commercial team reduced dependency by improving mid-market coverage, tightening qualification standards, and rebalancing outbound sequences toward faster-velocity segments.
 
 Execution improved in the operating model. Onboarding cycle time dropped 19% after workflow simplification and proactive implementation playbooks. At the same time, migration volume increased support load, highlighting where product instrumentation and self-service diagnostics were still too shallow.
@@ -323,6 +380,35 @@ def slide_10_new_primitives(prs: Presentation) -> None:
     )
     b.skip(0.15)
     b.add(pc.KPIGrid(KPI_ITEMS, cols=3), h=3.0)
+
+
+def slide_10b_sparkline_cards(prs: Presentation) -> None:
+    """Additional slide for SparklineCard trend summaries."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 1 Additions", badge_text="SparklineCard"))
+    b.skip(0.12)
+    b.add_row(
+        pc.SparklineCard(*SPARKLINE_ITEMS[0]),
+        pc.SparklineCard(*SPARKLINE_ITEMS[1]),
+        pc.SparklineCard(*SPARKLINE_ITEMS[2]),
+        h=1.6,
+    )
+    b.skip(0.18)
+    b.add_row(
+        pc.SparklineCard(*SPARKLINE_ITEMS[3]),
+        pc.SparklineCard(*SPARKLINE_ITEMS[4]),
+        pc.SparklineCard(*SPARKLINE_ITEMS[5]),
+        h=1.6,
+    )
+    b.skip(0.2)
+    b.add(
+        pc.TextCard(
+            "SparklineCard combines a primary KPI, change signal, and compact trend view in one surface. "
+            "Use it when a standard metric card is too static for dashboard storytelling.",
+            style="muted",
+        ),
+        h=1.0,
+    )
 
 
 def slide_11_timeline_comparison(prs: Presentation) -> None:
@@ -540,55 +626,56 @@ def slide_17_grouped_table(prs: Presentation) -> None:
     )
 
 
-def slide_18_animations(prs: Presentation) -> None:
-    """Slide 18 - Animation effects (FadeInEffect, SlideInEffect, GrowEffect)."""
+def slide_18_chart_extensions(prs: Presentation) -> None:
+    """Slide 18 - Donut and radar chart variants."""
     b = pc.SlideBuilder(prs)
-    b.add(pc.SectionHeader("Phase 4: Animation & Transitions", badge_text="Effects"))
-    b.skip(0.15)
-    
-    # Example 1: Fade-in title
-    b.add(
-        pc.FadeInEffect(
-            pc.TitleBlock("Welcome!", "This title fades in (static → see rendered output)"),
-            pc.AnimationConfig(duration_ms=800, frames=10, easing="ease_out"),
-        ),
-        h=0.7,
-    )
-    b.skip(0.2)
-    
-    # Example 2 & 3: Slide-in metrics
+    b.add(pc.SectionHeader("Phase 4: Chart Extensions", badge_text="Donut + Radar"))
+    b.skip(0.12)
     b.add_row(
-        pc.SlideInEffect(
-            pc.MetricCard("Engagement", "92%", "+5pp", True),
-            direction="left",
-            config=pc.AnimationConfig(duration_ms=600, frames=8, easing="ease_out"),
+        pc.DonutChart(
+            PIE_CATS,
+            PIE_VALS,
+            center_label="72%\nEnterprise",
+            title="Revenue Mix (Donut)",
         ),
-        pc.GrowEffect(
-            pc.MetricCard("Accuracy", "87%", "+8%", True),
-            config=pc.AnimationConfig(duration_ms=700, frames=10, easing="ease_out"),
+        pc.RadarChart(
+            RADAR_AXES,
+            RADAR_SERIES,
+            title="Capability Scorecard",
+            filled=True,
         ),
-        pc.SlideInEffect(
-            pc.MetricCard("Adoption", "72%", "+12%", True),
-            direction="right",
-            config=pc.AnimationConfig(duration_ms=600, frames=8, easing="ease_out"),
-        ),
-        h=1.2,
+        h=3.0,
     )
-    b.skip(0.25)
-    
+    b.skip(0.18)
     b.add(
         pc.TextCard(
-            "Note: python-pptx does not natively support embedded slide animations. "
-            "Animation effects render at their end state in static PowerPoint. "
-            "For true animations, export slides to PNG via render_frame() or use PowerPoint GUI.",
+            "These chart variants round out the standard chart set: DonutChart emphasizes a headline metric in the center, "
+            "while RadarChart compares capability balance across multiple axes.",
             style="muted",
         ),
         h=1.0,
     )
 
 
-def slide_19_narrative_patterns(prs: Presentation) -> None:
-    """Slide 19 - Long-form narrative patterns (two-column + auto pagination)."""
+def slide_19_pipeline_planning(prs: Presentation) -> None:
+    """Slide 19 - Funnel and Gantt planning views."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 4: Planning Views", badge_text="Funnel + Gantt"))
+    b.skip(0.12)
+    b.add_row(
+        pc.FunnelChart(FUNNEL_STAGES, title="Demand Funnel"),
+        pc.GanttChart(
+            GANTT_LANES,
+            title="Cross-Functional Delivery Plan",
+            tick_labels=["Kickoff", "Wk 3", "Wk 6", "Wk 9", "Launch"],
+        ),
+        h=4.2,
+        weights=[0.82, 1.18],
+    )
+
+
+def slide_20_narrative_patterns(prs: Presentation) -> None:
+    """Slide 20 - Long-form narrative patterns (two-column + auto pagination)."""
     b = pc.SlideBuilder(prs)
     b.add(pc.SectionHeader("Phase 5: Long-form Storytelling", badge_text="Narrative"))
     b.skip(0.12)
@@ -635,8 +722,8 @@ def slide_19_narrative_patterns(prs: Presentation) -> None:
     )
 
 
-def slide_20_multitheme_qa(prs: Presentation) -> None:
-    """Slide 20 - side-by-side theme section overrides for visual QA."""
+def slide_21_multitheme_qa(prs: Presentation) -> None:
+    """Slide 21 - side-by-side theme section overrides for visual QA."""
     b = pc.SlideBuilder(prs)
     b.add(pc.SectionHeader("Theme Cascade QA", badge_text="Section Overrides"))
     b.skip(0.12)
@@ -707,6 +794,7 @@ SLIDES = [
     slide_8_composite,
     slide_9_navigation,
     slide_10_new_primitives,
+    slide_10b_sparkline_cards,
     slide_11_timeline_comparison,
     slide_12_heatmap_range,
     slide_13_code_annotation,
@@ -714,9 +802,10 @@ SLIDES = [
     slide_15_accordion_features,
     slide_16_scatter_plot,
     slide_17_grouped_table,
-    slide_18_animations,
-    slide_19_narrative_patterns,
-    slide_20_multitheme_qa,
+    slide_18_chart_extensions,
+    slide_19_pipeline_planning,
+    slide_20_narrative_patterns,
+    slide_21_multitheme_qa,
 ]
 
 

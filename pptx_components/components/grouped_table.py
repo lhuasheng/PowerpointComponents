@@ -118,7 +118,7 @@ class GroupedTable(Component):
         if self.title:
             add_text_box(
                 slide, x, cursor_y, width, self.TITLE_H,
-                self.title, 24, bold=True,
+                self.title, t.SUBHEADING, bold=True,
                 color_rgb=t.TEXT_PRIMARY,
                 alignment=PP_ALIGN.CENTER
             )
@@ -131,7 +131,7 @@ class GroupedTable(Component):
             add_rect(slide, col_x, cursor_y, col_w, self.HEADER_H, fill_rgb=t.ACCENT)
             add_text_box(
                 slide, col_x + 0.05, cursor_y + 0.02, col_w - 0.1, self.HEADER_H - 0.04,
-                col_name, 11, bold=True,
+                col_name, t.BODY, bold=True,
                 color_rgb=(255, 255, 255),
                 alignment=PP_ALIGN.CENTER
             )
@@ -159,7 +159,7 @@ class GroupedTable(Component):
 
                 add_text_box(
                     slide, col_x + 0.05, cursor_y + 0.02, col_w - 0.1, self.ROW_H - 0.04,
-                    cell_text, 11, bold=True,
+                    cell_text, t.CAPTION, bold=True,
                     color_rgb=t.TEXT_PRIMARY,
                     alignment=PP_ALIGN.LEFT
                 )
@@ -180,7 +180,7 @@ class GroupedTable(Component):
 
                     add_text_box(
                         slide, col_x + 0.05, cursor_y + 0.02, col_w - 0.1, self.ROW_H - 0.04,
-                        indent + cell_text, 10,
+                        indent + cell_text, t.CAPTION,
                         color_rgb=t.TEXT_PRIMARY,
                         alignment=PP_ALIGN.LEFT
                     )
@@ -201,7 +201,7 @@ class GroupedTable(Component):
 
                     add_text_box(
                         slide, col_x + 0.05, cursor_y + 0.02, col_w - 0.1, self.FOOTER_H - 0.04,
-                        cell_text, 10, bold=True,
+                        cell_text, t.CAPTION, bold=True,
                         color_rgb=t.TEXT_MUTED,
                         alignment=PP_ALIGN.LEFT
                     )
