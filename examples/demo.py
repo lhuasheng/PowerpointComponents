@@ -116,6 +116,14 @@ builder.add(
 WATERFALL_CATS = ["Base", "New Logos", "Upsell", "Expansion", "Churn", "Discounts"]
 WATERFALL_VALS = [500, 120, 85, 40, -60, -35]
 
+LONG_NARRATIVE_TEXT = """Q2 opened with concentrated enterprise exposure: two strategic accounts represented 28% of net new ARR and introduced procurement timing risk. The commercial team reduced dependency by improving mid-market coverage, tightening qualification standards, and rebalancing outbound sequences toward faster-velocity segments.
+
+Execution improved in the operating model. Onboarding cycle time dropped 19% after workflow simplification and proactive implementation playbooks. At the same time, migration volume increased support load, highlighting where product instrumentation and self-service diagnostics were still too shallow.
+
+Financially, gross margin improved by 2.3 points due to infrastructure right-sizing and contract renegotiation in third-party services. This gain is expected to partially normalize in Q3 while regional failover hardening and observability upgrades are in flight.
+
+The second-half plan focuses on durable retention drivers, expansion motion enablement, and service-quality stabilization. Decision velocity and cross-functional accountability are now the central execution constraints, not strategy clarity."""
+
 
 # ── Slide factory functions (theme-agnostic) ───────────────────────────────
 
@@ -579,6 +587,113 @@ def slide_18_animations(prs: Presentation) -> None:
     )
 
 
+def slide_19_narrative_patterns(prs: Presentation) -> None:
+    """Slide 19 - Long-form narrative patterns (two-column + auto pagination)."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Phase 5: Long-form Storytelling", badge_text="Narrative"))
+    b.skip(0.12)
+    b.add(
+        pc.NarrativeTwoColumnPage(
+            title="Executive Narrative - Structured View",
+            body=(
+                "Q2 performance stabilized after concentration risk mitigation and onboarding "
+                "process redesign. Margin expansion creates room for selective reinvestment, "
+                "but service quality and migration complexity still require focused execution "
+                "through Q3."
+            ),
+            summary="Narrative in one slide with decision support rail.",
+            sidebar_title="Decision Lens",
+            sidebar_points=[
+                "Protect margin gains",
+                "Reduce support load",
+                "Prioritize retention levers",
+                "Tighten ownership by workflow",
+            ],
+            sidebar_note="Next review: validate churn trend by segment.",
+            page=1,
+            total_pages=1,
+        ),
+        h=4.9,
+    )
+
+    # Demonstrate helper-driven multi-slide generation for very long narratives.
+    pc.build_narrative_slides(
+        prs,
+        title="Executive Narrative - Auto Paginated",
+        text=LONG_NARRATIVE_TEXT,
+        summary="Long text automatically split into multiple slides.",
+        sidebar_title="Steering Notes",
+        sidebar_points=[
+            "Watch enterprise concentration",
+            "Keep onboarding gains sticky",
+            "Fund observability upgrades",
+            "Track p95 latency weekly",
+        ],
+        sidebar_note="Auto-generated narrative section",
+        max_chars_per_page=540,
+        max_paragraphs_per_page=2,
+    )
+
+
+def slide_20_multitheme_qa(prs: Presentation) -> None:
+    """Slide 20 - side-by-side theme section overrides for visual QA."""
+    b = pc.SlideBuilder(prs)
+    b.add(pc.SectionHeader("Theme Cascade QA", badge_text="Section Overrides"))
+    b.skip(0.12)
+
+    base_theme = b.theme
+    warm_section = {
+        "SURFACE": (255, 247, 234),
+        "SURFACE_ALT": (246, 231, 206),
+        "TEXT_PRIMARY": (74, 44, 22),
+        "TEXT_SECONDARY": (111, 72, 40),
+        "ACCENT": (193, 107, 41),
+        "MD": 0.18,
+    }
+    cool_section = {
+        "SURFACE": (232, 245, 255),
+        "SURFACE_ALT": (212, 232, 250),
+        "TEXT_PRIMARY": (18, 43, 76),
+        "TEXT_SECONDARY": (47, 77, 116),
+        "ACCENT": (26, 99, 194),
+        "MD": 0.18,
+    }
+
+    b.add_row(
+        pc.Container(
+            pc.Column(
+                pc.TextCard("Warm Section", "Local theme patch: editorial warm palette.", style="default"),
+                pc.MetricCard("Retention", "94%", "+2pp", True),
+                gap=0.12,
+            ),
+            border_rgb=(198, 151, 104),
+            local_theme=base_theme,
+            theme_patch=warm_section,
+        ),
+        pc.Container(
+            pc.Column(
+                pc.TextCard("Cool Section", "Local theme patch: corporate blue palette.", style="default"),
+                pc.MetricCard("Uptime", "99.97%", "+0.04pp", True),
+                gap=0.12,
+            ),
+            border_rgb=(115, 153, 202),
+            local_theme=base_theme,
+            theme_patch=cool_section,
+        ),
+        h=3.8,
+    )
+
+    b.skip(0.2)
+    b.add(
+        pc.TextCard(
+            "Both cards inherit the slide theme, then apply container-scoped token patches. "
+            "Use this slide to check contrast, spacing, and callout consistency across local overrides.",
+            style="muted",
+        ),
+        h=1.05,
+    )
+
+
 # ── Main ───────────────────────────────────────────────────────────────────
 
 SLIDES = [
@@ -600,6 +715,8 @@ SLIDES = [
     slide_16_scatter_plot,
     slide_17_grouped_table,
     slide_18_animations,
+    slide_19_narrative_patterns,
+    slide_20_multitheme_qa,
 ]
 
 

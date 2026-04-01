@@ -1,4 +1,17 @@
-from pptx_components.theme import Theme, DarkTheme, LightTheme, set_theme, get_theme
+from pptx_components.theme import (
+    Theme,
+    ThemePatch,
+    DarkTheme,
+    LightTheme,
+    CorporateBlueTheme,
+    EditorialWarmTheme,
+    HighContrastTheme,
+    BrandTheme,
+    PatchedTheme,
+    apply_theme_patch,
+    set_theme,
+    get_theme,
+)
 from pptx_components.base import Component
 from pptx_components.layout import Row, Column, Grid, Container
 from pptx_components.slide_builder import SlideBuilder
@@ -25,13 +38,20 @@ from pptx_components.components.waterfall import WaterfallChart
 from pptx_components.components.text_card import TextCard
 from pptx_components.components.scatter import ScatterPlot
 from pptx_components.components.grouped_table import GroupedTable
+from pptx_components.components.narrative import (
+    NarrativePage,
+    NarrativeTwoColumnPage,
+    LongNarrativeBlock,
+    paginate_narrative,
+    build_narrative_slides,
+)
 from pptx_components.components.animation import (
     AnimationConfig, FadeInEffect, SlideInEffect, GrowEffect, SequenceAnimation
 )
 from pptx_components.export import export_slides
 
 __all__ = [
-    "Theme", "DarkTheme", "LightTheme", "set_theme", "get_theme",
+    "Theme", "ThemePatch", "DarkTheme", "LightTheme", "CorporateBlueTheme", "EditorialWarmTheme", "HighContrastTheme", "BrandTheme", "PatchedTheme", "apply_theme_patch", "set_theme", "get_theme",
     "Component",
     "Row", "Column", "Grid", "Container",
     "SlideBuilder",
@@ -48,5 +68,6 @@ __all__ = [
     "Timeline", "ComparisonPanel",
     "Heatmap", "RangeIndicator", "CodeBlock", "Annotation", "WaterfallChart",
     "TextCard",    "ScatterPlot", "GroupedTable",
+    "NarrativePage", "NarrativeTwoColumnPage", "LongNarrativeBlock", "paginate_narrative", "build_narrative_slides",
     "AnimationConfig", "FadeInEffect", "SlideInEffect", "GrowEffect", "SequenceAnimation",    "export_slides",
 ]

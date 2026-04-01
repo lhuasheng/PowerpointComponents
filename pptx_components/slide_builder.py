@@ -48,7 +48,7 @@ class SlideBuilder:
         t = self.theme
         resolved_x = x if x is not None else t.MARGIN
         resolved_w = w if w is not None else self._content_width()
-        resolved_h = h if h is not None else component.min_height
+        resolved_h = h if h is not None else component.min_height_for(t)
 
         explicit_y = y is not None
         resolved_y = y if explicit_y else self.cursor_y

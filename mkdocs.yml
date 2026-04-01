@@ -1,0 +1,61 @@
+site_name: PowerPoint Components
+site_description: Composable Python primitives for building modern PowerPoint decks
+site_url: https://lhuasheng.github.io/powerpointComponents/
+repo_url: https://github.com/lhuasheng/powerpointComponents
+repo_name: powerpointComponents
+
+theme:
+  name: material
+  logo: readme_assets/hero_snapshot.png
+  favicon: readme_assets/hero_snapshot.png
+  palette:
+    - scheme: default
+      primary: blue
+      accent: teal
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            show_signature: true
+            show_signature_annotations: true
+            separate_signature: true
+            heading_level: 2
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Components:
+      - Overview: components/README.md
+      - Text Box: components/text_box.md
+      - Chart: components/chart.md
+  - Guides:
+      - Components Guide: components/guide.md
+      - Component Reference: components/REFERENCE.md
+      - Composition Patterns: components/PATTERNS.md

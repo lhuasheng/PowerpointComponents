@@ -22,11 +22,27 @@ class Component(ABC):
     def min_height(self) -> float:
         """Minimum height in inches this component needs to render correctly."""
 
+    def min_height_for(self, theme: Theme | None = None) -> float:
+        """Theme-aware min-height hook for cascading layout measurements.
+
+        Components with truly theme-dependent sizing can override this method.
+        """
+        _resolve(theme)
+        return self.min_height
+
 
 # ── Module-level helpers (stateless, no self) ──────────────────────────────
 
 def _resolve(theme: Theme | None) -> Theme:
     return theme if theme is not None else get_theme()
+
+
+def resolve_theme(*themes: Theme | None) -> Theme:
+    """Resolve a theme by precedence (first non-None wins), else global default."""
+    for theme in themes:
+        if theme is not None:
+            return theme
+    return get_theme()
 
 
 def add_rect(slide, x: float, y: float, w: float, h: float,

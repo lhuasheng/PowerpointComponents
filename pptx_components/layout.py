@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from pptx_components.base import Component, add_rect, apply_fill, apply_no_line, _resolve
-from pptx_components.theme import Theme
+from typing import Mapping
+
+from pptx_components.base import Component, add_rect, _resolve
+from pptx_components.theme import Theme, apply_theme_patch
 
 
 # ── Row ────────────────────────────────────────────────────────────────────
@@ -45,7 +47,11 @@ class Row(Component):
 
     @property
     def min_height(self) -> float:
-        return max(c.min_height for c in self.components)
+        return self.min_height_for()
+
+    def min_height_for(self, theme: Theme | None = None) -> float:
+        t = _resolve(theme)
+        return max(c.min_height_for(t) for c in self.components)
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
@@ -74,21 +80,26 @@ class Column(Component):
 
     @property
     def min_height(self) -> float:
-        return sum(c.min_height for c in self.components) + 0.2 * (len(self.components) - 1)
+        return self.min_height_for()
+
+    def min_height_for(self, theme: Theme | None = None) -> float:
+        t = _resolve(theme)
+        return sum(c.min_height_for(t) for c in self.components) + self._gap_val(t) * (len(self.components) - 1)
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
         t = _resolve(theme)
         gap = self._gap_val(t)
-        total_needed = sum(c.min_height for c in self.components) + gap * (len(self.components) - 1)
+        total_needed = self.min_height_for(t)
         if total_needed > height + 0.01:
             raise ValueError(
                 f"Column min_height ({total_needed:.2f}\") exceeds available height ({height:.2f}\")"
             )
         cursor_y = y
         for comp in self.components:
-            comp.render(slide, x, cursor_y, width, comp.min_height, theme=t)
-            cursor_y += comp.min_height + gap
+            child_h = comp.min_height_for(t)
+            comp.render(slide, x, cursor_y, width, child_h, theme=t)
+            cursor_y += child_h + gap
 
 
 # ── Grid ───────────────────────────────────────────────────────────────────
@@ -117,15 +128,21 @@ class Grid(Component):
     def _max_row_height(self, row_comps: list[Component]) -> float:
         return max(c.min_height for c in row_comps)
 
+    def _max_row_height_for(self, row_comps: list[Component], theme: Theme) -> float:
+        return max(c.min_height_for(theme) for c in row_comps)
+
     @property
     def min_height(self) -> float:
-        row_gap = self._row_gap if self._row_gap is not None else 0.2
+        return self.min_height_for()
+
+    def min_height_for(self, theme: Theme | None = None) -> float:
+        t = _resolve(theme)
+        row_gap = self._row_gap_val(t)
         rows = self._row_count()
-        # Compute max height per row
         total = 0.0
         for i in range(rows):
             chunk = self.components[i * self.cols: (i + 1) * self.cols]
-            total += self._max_row_height(chunk)
+            total += self._max_row_height_for(chunk, t)
         total += row_gap * (rows - 1)
         return total
 
@@ -139,7 +156,7 @@ class Grid(Component):
 
         for row_idx in range(self._row_count()):
             chunk = self.components[row_idx * self.cols: (row_idx + 1) * self.cols]
-            row_h = self._max_row_height(chunk)
+            row_h = self._max_row_height_for(chunk, t)
             Row(*chunk, gap=col_gap).render(slide, x, cursor_y, width, row_h, theme=t)
             cursor_y += row_h + row_gap
 
@@ -157,25 +174,35 @@ class Container(Component):
                  padding: float | None = None,
                  fill_rgb: tuple[int, int, int] | None = None,
                  border_rgb: tuple[int, int, int] | None = None,
-                 radius: float = 0.05):
+                 radius: float = 0.05,
+                 local_theme: Theme | None = None,
+                 theme_patch: Mapping[str, object] | None = None):
         self.child = child
         self._padding = padding
         self.fill_rgb = fill_rgb
         self.border_rgb = border_rgb
         self.radius = radius
+        self.local_theme = local_theme
+        self.theme_patch = dict(theme_patch) if theme_patch is not None else None
+
+    def _scoped_theme(self, parent_theme: Theme | None) -> Theme:
+        base = self.local_theme if self.local_theme is not None else _resolve(parent_theme)
+        return apply_theme_patch(base, self.theme_patch)
 
     def _pad(self, t: Theme) -> float:
         return self._padding if self._padding is not None else t.MD
 
     @property
     def min_height(self) -> float:
-        from pptx_components.theme import get_theme
-        t = get_theme()
-        return self.child.min_height + 2 * self._pad(t)
+        return self.min_height_for()
+
+    def min_height_for(self, theme: Theme | None = None) -> float:
+        t = self._scoped_theme(theme)
+        return self.child.min_height_for(t) + 2 * self._pad(t)
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
-        t = _resolve(theme)
+        t = self._scoped_theme(theme)
         pad = self._pad(t)
         fill = self.fill_rgb if self.fill_rgb is not None else t.SURFACE
 

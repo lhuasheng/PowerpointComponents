@@ -11,6 +11,42 @@ from pptx.util import Inches
 import pptx_components as pc
 
 
+class DenseTheme(pc.BrandTheme):
+    """Spacing-dense theme used to verify cascading min-height calculations."""
+    MD = 0.1
+    SM = 0.1
+
+
+def test_theme_cascade_min_height_resolution():
+    """min_height_for should respect the active scoped theme."""
+    container = pc.Container(pc.TextCard("Title", "Body"))
+    column = pc.Column(pc.TextCard("A", "B"), pc.TextCard("C", "D"))
+
+    default_h = container.min_height_for(pc.DarkTheme())
+    dense_h = container.min_height_for(DenseTheme())
+    assert dense_h < default_h
+
+    default_col_h = column.min_height_for(pc.DarkTheme())
+    dense_col_h = column.min_height_for(DenseTheme())
+    assert dense_col_h < default_col_h
+
+
+def test_container_local_theme_patch_scope():
+    """Container local theme patch should scope style + spacing to the section subtree."""
+    base = pc.DarkTheme()
+    patched = pc.apply_theme_patch(base, {"MD": 0.1, "SURFACE": (1, 2, 3)})
+
+    regular = pc.Container(pc.TextCard("Title", "Body"))
+    local = pc.Container(
+        pc.TextCard("Title", "Body"),
+        theme_patch={"MD": 0.1, "SURFACE": (1, 2, 3)},
+    )
+
+    assert patched.MD == 0.1
+    assert patched.SURFACE == (1, 2, 3)
+    assert local.min_height_for(base) < regular.min_height_for(base)
+
+
 def test_new_components():
     """Validate new navigation components render without errors."""
     prs = Presentation()
