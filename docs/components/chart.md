@@ -2,6 +2,21 @@
 
 Data-visualization components for bars, lines, pie, and scatter patterns.
 
+## Visual Example
+
+<div class="shot-grid">
+	<figure>
+		<img src="https://raw.githubusercontent.com/lhuasheng/powerpointComponents/main/examples/demo_dark_slides/slide_011.png" alt="Dark theme chart and decision matrix slide" />
+		<figcaption>Dark theme composite with horizontal bar comparison.</figcaption>
+	</figure>
+	<figure>
+		<img src="https://raw.githubusercontent.com/lhuasheng/powerpointComponents/main/examples/demo_light_slides/slide_011.png" alt="Light theme chart and decision matrix slide" />
+		<figcaption>Light theme variant with consistent geometry and spacing.</figcaption>
+	</figure>
+</div>
+
+> Tip: Start with `BarChart(mode="bar_clustered")` for decision matrices and `ScatterChart` for relationship-heavy analysis slides.
+
 ## Chart Components
 
 ### BarChart

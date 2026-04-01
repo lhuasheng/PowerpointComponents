@@ -2,7 +2,7 @@
 description: "Use when creating new PowerPoint or PPTX components, designing beautiful slide building blocks, extending python-pptx presentation primitives, or prototyping animation-oriented presentation elements in this repository. Prefer this agent over the default one for new reusable component creation."
 name: "PPTX Component Designer"
 tools: [read, search, edit, execute, agent]
-agents: ["Design Outcome Vet", "Documentation Handoff"]
+agents: ["Design Outcome Vet", "Documentation Handoff", "Component Interface Architect"]
 user-invocable: true
 argument-hint: "Describe the component, slide use case, desired visual direction, and any interaction behavior you want."
 ---
@@ -28,6 +28,7 @@ Primary capability:
 5. Generate a PPTX or export slides when practical to verify layout, readability, and visual hierarchy.
 6. If visual validation is the main remaining question, hand off to `Design Outcome Vet` with the generated output.
 7. When implementation is complete and the main remaining work is docs, hand off to `Documentation Handoff` with the changed files and finalized API details.
+8. When implementation and docs are complete and the next step is agent-consumable interface infrastructure, hand off to `Component Interface Architect` to produce schema files, interface templates, and validation/CLI contracts.
 
 ## Output Format
 Return:

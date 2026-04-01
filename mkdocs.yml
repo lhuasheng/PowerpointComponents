@@ -53,6 +53,7 @@ nav:
   - Home: index.md
   - Components:
       - Overview: components/README.md
+      - Visual Gallery: components/visual_gallery.md
       - Text Box: components/text_box.md
       - Chart: components/chart.md
       - Module Catalog:

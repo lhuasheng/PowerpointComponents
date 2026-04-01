@@ -4,6 +4,7 @@ This folder contains GitHub-friendly docs for all presentation components in thi
 
 ## Navigation
 
+- [Visual Gallery](./visual_gallery.md)
 - [Component Reference](./REFERENCE.md)
 - [Composition Patterns](./PATTERNS.md)
 - [Module Catalog](./modules/index.md)
