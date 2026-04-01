@@ -55,6 +55,33 @@ nav:
       - Overview: components/README.md
       - Text Box: components/text_box.md
       - Chart: components/chart.md
+      - Module Catalog:
+          - Index: components/modules/index.md
+          - animation.py: components/modules/animation.md
+          - annotation.py: components/modules/annotation.md
+          - callout.py: components/modules/callout.md
+          - chart.py: components/modules/chart.md
+          - chart_utils.py: components/modules/chart_utils.md
+          - code_block.py: components/modules/code_block.md
+          - comparison.py: components/modules/comparison.md
+          - divider.py: components/modules/divider.md
+          - grouped_table.py: components/modules/grouped_table.md
+          - heatmap.py: components/modules/heatmap.md
+          - image.py: components/modules/image.md
+          - kpi_grid.py: components/modules/kpi_grid.md
+          - legend.py: components/modules/legend.md
+          - list.py: components/modules/list.md
+          - metric.py: components/modules/metric.md
+          - narrative.py: components/modules/narrative.md
+          - navigation.py: components/modules/navigation.md
+          - progress.py: components/modules/progress.md
+          - range_indicator.py: components/modules/range_indicator.md
+          - scatter.py: components/modules/scatter.md
+          - table.py: components/modules/table.md
+          - text_card.py: components/modules/text_card.md
+          - timeline.py: components/modules/timeline.md
+          - title.py: components/modules/title.md
+          - waterfall.py: components/modules/waterfall.md
   - Guides:
       - Components Guide: components/guide.md
       - Component Reference: components/REFERENCE.md

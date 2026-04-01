@@ -6,6 +6,7 @@ This folder contains GitHub-friendly docs for all presentation components in thi
 
 - [Component Reference](./REFERENCE.md)
 - [Composition Patterns](./PATTERNS.md)
+- [Module Catalog](./modules/index.md)
 
 ## Public vs Internal Imports
 
