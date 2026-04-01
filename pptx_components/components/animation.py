@@ -36,6 +36,21 @@ class AnimationConfig:
     frames: int = 10
     easing: str = "ease_in_out"
 
+    def __post_init__(self) -> None:
+        if self.duration_ms <= 0:
+            raise ValueError("duration_ms must be > 0")
+        if self.frames < 2:
+            raise ValueError("frames must be >= 2")
+        # Validate easing early so invalid configs fail fast.
+        get_easer(self.easing)
+
+
+def _validate_frame_index(frame: int, total_frames: int) -> int:
+    """Validate a zero-based frame index against a known frame count."""
+    if frame < 0 or frame >= total_frames:
+        raise ValueError(f"frame must be in [0, {total_frames - 1}]; got {frame}")
+    return frame
+
 
 def ease_linear(t: float) -> float:
     """Linear easing: t ∈ [0, 1]."""
@@ -115,6 +130,7 @@ class FadeInEffect(Component):
         Args:
             frame: Frame index, 0 to config.frames-1.
         """
+        _validate_frame_index(frame, self.config.frames)
         # Note: python-pptx doesn't directly support opacity changes via API.
         # This is a placeholder for future animation systems.
         # For now, render the child as-is (end state).
@@ -165,8 +181,9 @@ class SlideInEffect(Component):
         frame: int, theme: Theme | None = None
     ) -> None:
         """Render animation frame with position translation."""
+        _validate_frame_index(frame, self.config.frames)
         easer = get_easer(self.config.easing)
-        progress = easer(frame / max(1, self.config.frames - 1))
+        progress = easer(frame / (self.config.frames - 1))
 
         # Calculate offset
         offset_units = 2.0  # Offscreen distance
@@ -226,8 +243,9 @@ class GrowEffect(Component):
         frame: int, theme: Theme | None = None
     ) -> None:
         """Render animation frame with scaling effect."""
+        _validate_frame_index(frame, self.config.frames)
         easer = get_easer(self.config.easing)
-        scale = easer(frame / max(1, self.config.frames - 1))
+        scale = easer(frame / (self.config.frames - 1))
 
         # Calculate scaled position (grow from center)
         center_x = x + width / 2
@@ -287,16 +305,28 @@ class SequenceAnimation(Component):
         frame: int, theme: Theme | None = None
     ) -> None:
         """Render animation frame for sequence."""
+        _validate_frame_index(frame, self.config.frames)
         # Convert frame to milliseconds
-        time_ms = (frame / max(1, self.config.frames - 1)) * self.config.duration_ms
+        time_ms = (frame / (self.config.frames - 1)) * self.config.duration_ms
 
         for comp, delay_ms in self.animations:
             if time_ms >= delay_ms:
                 # Component's animation starts at delay_ms
-                if isinstance(comp, (FadeInEffect, SlideInEffect, GrowEffect)):
-                    local_time = time_ms - delay_ms
-                    local_frame = int((local_time / comp.config.duration_ms) * comp.config.frames)
-                    local_frame = min(local_frame, comp.config.frames - 1)
-                    comp.render_frame(slide, x, y, width, height, local_frame, theme)
+                render_frame_fn = getattr(comp, "render_frame", None)
+                if callable(render_frame_fn):
+                    local_time = max(0.0, time_ms - delay_ms)
+                    comp_cfg = getattr(comp, "config", None)
+                    comp_duration_ms = getattr(comp_cfg, "duration_ms", self.config.duration_ms)
+                    comp_frames = getattr(comp_cfg, "frames", self.config.frames)
+
+                    if comp_duration_ms <= 0:
+                        comp_duration_ms = self.config.duration_ms
+                    if comp_frames < 2:
+                        comp_frames = self.config.frames
+
+                    local_progress = min(1.0, local_time / comp_duration_ms)
+                    local_frame = int(local_progress * (comp_frames - 1))
+                    _validate_frame_index(local_frame, comp_frames)
+                    render_frame_fn(slide, x, y, width, height, local_frame, theme)
                 else:
                     comp.render(slide, x, y, width, height, theme)
