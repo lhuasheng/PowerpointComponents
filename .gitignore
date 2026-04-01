@@ -21,3 +21,6 @@ examples/*_slides/
 
 # Generated local component test decks
 /*_test.pptx
+
+# Generated MkDocs site (built by CI)
+/site/
