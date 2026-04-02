@@ -53,6 +53,7 @@ from pptx_components.components.narrative import (
     build_narrative_slides,
 )
 from pptx_components.export import export_slides
+from pptx_components.master_builder import MasterPresentation, MasterSlide
 
 try:
     __version__ = _package_version("pptx-components")

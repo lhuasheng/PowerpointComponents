@@ -3,6 +3,7 @@ from __future__ import annotations
 from pptx.enum.text import PP_ALIGN
 
 from pptx_components.base import Component, _resolve, add_rect, add_text_box
+from pptx_components.components.chart_utils import default_theme_palette
 from pptx_components.theme import Theme
 
 
@@ -14,6 +15,17 @@ def _lerp_color(
     c1: tuple[int, int, int], c2: tuple[int, int, int], t: float
 ) -> tuple[int, int, int]:
     return (_lerp(c1[0], c2[0], t), _lerp(c1[1], c2[1], t), _lerp(c1[2], c2[2], t))
+
+
+def _palette_color(palette: list[tuple[int, int, int]], norm: float) -> tuple[int, int, int]:
+    if len(palette) == 1:
+        return palette[0]
+
+    pos = max(0.0, min(1.0, norm)) * (len(palette) - 1)
+    low = int(pos)
+    high = min(low + 1, len(palette) - 1)
+    blend = pos - low
+    return _lerp_color(palette[low], palette[high], blend)
 
 
 class Heatmap(Component):
@@ -77,7 +89,8 @@ class Heatmap(Component):
                 return _lerp_color(t.NEGATIVE, t.SURFACE_ALT, norm * 2)
             return _lerp_color(t.SURFACE_ALT, t.POSITIVE, (norm - 0.5) * 2)
         # sequential
-        return _lerp_color(t.SURFACE_ALT, t.ACCENT, norm)
+        palette = [t.SURFACE_ALT, *default_theme_palette(t)[:4]]
+        return _palette_color(palette, norm)
 
     def _text_color(
         self, t: Theme, norm: float

@@ -1,5 +1,7 @@
 from __future__ import annotations
+import json
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Mapping
 
 
@@ -56,6 +58,14 @@ class Theme(ABC):
 
     @property
     @abstractmethod
+    def ACCENT_2(self) -> tuple[int, int, int]: ...
+
+    @property
+    @abstractmethod
+    def ACCENT_3(self) -> tuple[int, int, int]: ...
+
+    @property
+    @abstractmethod
     def ACCENT_SOFT(self) -> tuple[int, int, int]: ...
 
     # ── Semantic color pairs: {"style": (fill_rgb, text_rgb)} ─────────────
@@ -71,6 +81,10 @@ class Theme(ABC):
     @property
     @abstractmethod
     def NEGATIVE(self) -> tuple[int, int, int]: ...
+
+    @property
+    def BG_IMAGE(self) -> str | None:
+        return None
 
 
 class DarkTheme(Theme):
@@ -96,6 +110,12 @@ class DarkTheme(Theme):
 
     @property
     def ACCENT(self): return (59, 130, 246)          # blue-500
+
+    @property
+    def ACCENT_2(self): return (16, 185, 129)        # emerald-500
+
+    @property
+    def ACCENT_3(self): return (249, 115, 22)        # orange-500
 
     @property
     def ACCENT_SOFT(self): return (37, 99, 235)      # blue-600
@@ -141,6 +161,12 @@ class LightTheme(Theme):
     def ACCENT(self): return (37, 99, 235)          # blue-600
 
     @property
+    def ACCENT_2(self): return (14, 116, 144)       # cyan-700
+
+    @property
+    def ACCENT_3(self): return (194, 65, 12)        # orange-700
+
+    @property
     def ACCENT_SOFT(self): return (147, 197, 253)   # blue-300
 
     @property
@@ -182,6 +208,12 @@ class CorporateBlueTheme(Theme):
 
     @property
     def ACCENT(self): return (24, 86, 187)
+
+    @property
+    def ACCENT_2(self): return (0, 138, 172)
+
+    @property
+    def ACCENT_3(self): return (34, 123, 92)
 
     @property
     def ACCENT_SOFT(self): return (116, 168, 241)
@@ -227,6 +259,12 @@ class EditorialWarmTheme(Theme):
     def ACCENT(self): return (186, 104, 41)
 
     @property
+    def ACCENT_2(self): return (153, 66, 48)
+
+    @property
+    def ACCENT_3(self): return (105, 127, 74)
+
+    @property
     def ACCENT_SOFT(self): return (233, 170, 116)
 
     @property
@@ -270,6 +308,12 @@ class HighContrastTheme(Theme):
     def ACCENT(self): return (0, 92, 197)
 
     @property
+    def ACCENT_2(self): return (0, 128, 96)
+
+    @property
+    def ACCENT_3(self): return (173, 63, 0)
+
+    @property
     def ACCENT_SOFT(self): return (122, 176, 244)
 
     @property
@@ -301,9 +345,13 @@ class BrandTheme(Theme):
         text_secondary: tuple[int, int, int] = (57, 76, 111),
         text_muted: tuple[int, int, int] = (96, 118, 150),
         accent: tuple[int, int, int] = (12, 119, 170),
+        accent_2: tuple[int, int, int] = (130, 28, 28),
+        accent_3: tuple[int, int, int] = (28, 107, 130),
         accent_soft: tuple[int, int, int] = (133, 201, 232),
         positive: tuple[int, int, int] = (27, 140, 79),
         negative: tuple[int, int, int] = (210, 66, 66),
+        bg_image: str | None = None,
+        logo_path: str | None = None,
         callout: dict[str, tuple[tuple[int, int, int], tuple[int, int, int]]] | None = None,
     ):
         self._bg = bg
@@ -313,15 +361,101 @@ class BrandTheme(Theme):
         self._text_secondary = text_secondary
         self._text_muted = text_muted
         self._accent = accent
+        self._accent_2 = accent_2
+        self._accent_3 = accent_3
         self._accent_soft = accent_soft
         self._positive = positive
         self._negative = negative
+        self._bg_image = bg_image
+        self._logo_path = logo_path
         self._callout = callout or {
             "info": ((221, 241, 250), (24, 84, 115)),
             "warning": ((255, 237, 204), (122, 77, 20)),
             "success": ((221, 244, 230), (26, 105, 56)),
             "error": ((252, 226, 226), (140, 33, 33)),
         }
+
+    @classmethod
+    def from_file(cls, path: str) -> "BrandTheme":
+        cfg_path = Path(path)
+        suffix = cfg_path.suffix.lower()
+
+        if suffix == ".json":
+            with cfg_path.open("r", encoding="utf-8") as f:
+                raw = json.load(f)
+        elif suffix in {".yaml", ".yml"}:
+            try:
+                import yaml
+            except ImportError as exc:
+                raise ImportError(
+                    "YAML support requires pyyaml. Install it with: pip install pyyaml"
+                ) from exc
+            with cfg_path.open("r", encoding="utf-8") as f:
+                raw = yaml.safe_load(f)
+        else:
+            raise ValueError(f"Unsupported theme config extension: {suffix}")
+
+        if not isinstance(raw, dict):
+            raise ValueError("Theme config must deserialize to a dictionary.")
+
+        color_keys = {
+            "bg",
+            "surface",
+            "surface_alt",
+            "text_primary",
+            "text_secondary",
+            "text_muted",
+            "accent",
+            "accent_2",
+            "accent_3",
+            "accent_soft",
+            "positive",
+            "negative",
+        }
+
+        data = dict(raw)
+        for key in color_keys:
+            if key in data:
+                data[key] = cls._parse_rgb(data[key])
+
+        callout = data.get("callout")
+        if isinstance(callout, dict):
+            data["callout"] = {
+                name: cls._parse_callout_pair(pair) for name, pair in callout.items()
+            }
+
+        return cls(**data)
+
+    @staticmethod
+    def _parse_rgb(value: object) -> tuple[int, int, int]:
+        if isinstance(value, str):
+            hex_value = value.strip().lstrip("#")
+            if len(hex_value) != 6:
+                raise ValueError(f"Invalid hex color: {value}")
+            return (
+                int(hex_value[0:2], 16),
+                int(hex_value[2:4], 16),
+                int(hex_value[4:6], 16),
+            )
+
+        if isinstance(value, (list, tuple)) and len(value) == 3:
+            return (int(value[0]), int(value[1]), int(value[2]))
+
+        raise ValueError(f"Unsupported color value: {value}")
+
+    @classmethod
+    def _parse_callout_pair(cls, value: object) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+        if isinstance(value, dict):
+            fill = value.get("fill")
+            text = value.get("text")
+            if fill is None or text is None:
+                raise ValueError("Callout map must include 'fill' and 'text'.")
+            return (cls._parse_rgb(fill), cls._parse_rgb(text))
+
+        if isinstance(value, (list, tuple)) and len(value) == 2:
+            return (cls._parse_rgb(value[0]), cls._parse_rgb(value[1]))
+
+        raise ValueError(f"Unsupported callout value: {value}")
 
     @property
     def BG(self): return self._bg
@@ -345,6 +479,12 @@ class BrandTheme(Theme):
     def ACCENT(self): return self._accent
 
     @property
+    def ACCENT_2(self): return self._accent_2
+
+    @property
+    def ACCENT_3(self): return self._accent_3
+
+    @property
     def ACCENT_SOFT(self): return self._accent_soft
 
     @property
@@ -356,6 +496,12 @@ class BrandTheme(Theme):
     @property
     def NEGATIVE(self): return self._negative
 
+    @property
+    def BG_IMAGE(self): return self._bg_image
+
+    @property
+    def LOGO_PATH(self): return self._logo_path
+
 
 ThemePatch = dict[str, object]
 
@@ -365,7 +511,7 @@ PATCHABLE_THEME_KEYS = {
     "SLIDE_W", "SLIDE_H", "MARGIN",
     "BG", "SURFACE", "SURFACE_ALT",
     "TEXT_PRIMARY", "TEXT_SECONDARY", "TEXT_MUTED",
-    "ACCENT", "ACCENT_SOFT", "CALLOUT", "POSITIVE", "NEGATIVE",
+    "ACCENT", "ACCENT_2", "ACCENT_3", "ACCENT_SOFT", "CALLOUT", "POSITIVE", "NEGATIVE",
 }
 
 
@@ -450,6 +596,12 @@ class PatchedTheme(Theme):
     def ACCENT(self): return self._value("ACCENT")
 
     @property
+    def ACCENT_2(self): return self._value("ACCENT_2")
+
+    @property
+    def ACCENT_3(self): return self._value("ACCENT_3")
+
+    @property
     def ACCENT_SOFT(self): return self._value("ACCENT_SOFT")
 
     @property
@@ -460,6 +612,9 @@ class PatchedTheme(Theme):
 
     @property
     def NEGATIVE(self): return self._value("NEGATIVE")
+
+    @property
+    def BG_IMAGE(self): return getattr(self._base, "BG_IMAGE", None)
 
 
 def apply_theme_patch(base: Theme, patch: Mapping[str, object] | None = None) -> Theme:

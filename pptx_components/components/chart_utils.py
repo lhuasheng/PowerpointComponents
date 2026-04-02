@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from pptx.chart.data import ChartData, CategoryChartData, XyChartData
 
+from pptx_components.theme import Theme
+
 
 def chart_data_from(categories: list[str],
                     series: dict[str, list[float]]) -> CategoryChartData:
@@ -36,3 +38,17 @@ def scatter_data_from(series: dict[str, list[tuple[float, float]]]) -> XyChartDa
         for x, y in points:
             s.add_data_point(x, y)
     return cd
+
+
+def default_theme_palette(theme: Theme) -> list[tuple[int, int, int]]:
+    """Return an ordered palette for multi-series and multi-category charts."""
+    return [
+        theme.ACCENT,
+        theme.ACCENT_2,
+        theme.ACCENT_3,
+        theme.ACCENT_SOFT,
+        (99, 102, 241),
+        (16, 185, 129),
+        (249, 115, 22),
+        (236, 72, 153),
+    ]

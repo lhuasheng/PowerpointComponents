@@ -9,20 +9,12 @@ from pptx.oxml.ns import qn
 
 from pptx_components.base import Component, _resolve
 from pptx_components.theme import Theme
-from pptx_components.components.chart_utils import chart_data_from, pie_data_from, scatter_data_from
-
-
-# Distinct palette for pie slices / multi-series charts
-_PIE_PALETTE = [
-    (59, 130, 246),   # blue-500
-    (16, 185, 129),   # emerald-500
-    (249, 115, 22),   # orange-500
-    (139, 92, 246),   # violet-500
-    (236, 72, 153),   # pink-500
-    (234, 179, 8),    # yellow-500
-    (20, 184, 166),   # teal-500
-    (244, 63, 94),    # rose-500
-]
+from pptx_components.components.chart_utils import (
+    chart_data_from,
+    pie_data_from,
+    scatter_data_from,
+    default_theme_palette,
+)
 
 
 def _set_no_fill_xml(chart) -> None:
@@ -118,23 +110,18 @@ def _style_chart(chart, t: Theme, title: str | None,
             pass
 
     # ── Series colors ──────────────────────────────────────────────────
+    palette = default_theme_palette(t)
+
     if is_pie:
         # Color each data point with a distinct hue
         plot = chart.plots[0]
         for i, point in enumerate(plot.series[0].points):
-            color = _PIE_PALETTE[i % len(_PIE_PALETTE)]
+            color = palette[i % len(palette)]
             point.format.fill.solid()
             point.format.fill.fore_color.rgb = RGBColor(*color)
     else:
-        series_colors = [
-            t.ACCENT,
-            t.ACCENT_SOFT,
-            (99, 102, 241),
-            (16, 185, 129),
-            (249, 115, 22),
-        ]
         for i, series in enumerate(chart.series):
-            color = series_colors[i % len(series_colors)]
+            color = palette[i % len(palette)]
             if is_line:
                 # Lines need visible strokes, not fills
                 series.format.line.color.rgb = RGBColor(*color)
@@ -310,8 +297,9 @@ class ScatterChart(Component):
         _style_chart(chart, t, self.title, is_line=False, is_pie=False)
 
         # Apply palette colors and marker sizes per series
+        palette = default_theme_palette(t)
         for i, ser in enumerate(chart.series):
-            color = _PIE_PALETTE[i % len(_PIE_PALETTE)]
+            color = palette[i % len(palette)]
             ser.marker.size = 8
             ser.marker.format.fill.solid()
             ser.marker.format.fill.fore_color.rgb = RGBColor(*color)

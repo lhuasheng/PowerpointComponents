@@ -50,6 +50,51 @@ b.add_row(
 prs.save("quickstart.pptx")
 ```
 
+## Slide Master Demo
+
+Use any existing `.pptx` brand template as the slide master. `MasterPresentation`
+strips the content slides, preserves all brand chrome (logos, colour bars, layouts,
+footers) and lets you build each new slide with `pptx_components` data components.
+
+```python
+from pptx_components.master_builder import MasterPresentation
+import pptx_components as pc
+
+prs = MasterPresentation("brand_template.pptx", clear_slides=True)
+
+slide = prs.add_slide("3_Title and Content", placeholders={0: "Base Stats"})
+slide.set_cursor(1.35).add(
+    pc.BarChart(
+        categories=["HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed"],
+        series={"Base Value": [35, 55, 40, 50, 50, 90]},
+        mode="bar_clustered",
+    ),
+    h=3.2,
+)
+
+prs.save("output.pptx")
+```
+
+Run the full 9-slide Pikachu species profile demo:
+
+```bash
+python examples/slidemasterdemo/slidemasterdemo.py --export
+```
+
+<div align="center">
+
+| Cover | Evolution Chain |
+|:---:|:---:|
+| ![Cover](docs/assets/examples/slidemasterdemo/slide_001.png) | ![Evolution](docs/assets/examples/slidemasterdemo/slide_003.png) |
+
+| KPI Grid | Timeline |
+|:---:|:---:|
+| ![KPI](docs/assets/examples/slidemasterdemo/slide_005.png) | ![Timeline](docs/assets/examples/slidemasterdemo/slide_008.png) |
+
+</div>
+
+See [docs/components/slide_master.md](docs/components/slide_master.md) for the full API reference and walkthrough.
+
 ## Run The Demo Deck
 
 ```bash

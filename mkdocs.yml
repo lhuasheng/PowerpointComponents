@@ -20,6 +20,9 @@ theme:
     - search.suggest
     - search.highlight
 
+hooks:
+  - docs/hooks.py
+
 plugins:
   - search
   - mkdocstrings:
@@ -83,7 +86,10 @@ nav:
           - timeline.py: components/modules/timeline.md
           - title.py: components/modules/title.md
           - waterfall.py: components/modules/waterfall.md
+  - Examples:
+      - Slide Master Demo: components/slide_master.md
   - Guides:
       - Components Guide: components/guide.md
+      - Slide Master Guide: components/guide_slide_master.md
       - Component Reference: components/REFERENCE.md
       - Composition Patterns: components/PATTERNS.md

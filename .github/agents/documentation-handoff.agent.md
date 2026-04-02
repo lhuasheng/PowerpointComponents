@@ -1,7 +1,7 @@
 ---
 description: "Use when component development is complete and documentation must be updated, including Python docstrings, component reference docs, usage examples, sample pictures, GitHub Pages docs site content, and release-ready notes. Trigger phrases: component done, implementation finished, add docstrings, update docs, documentation handoff, document this component, add screenshots, add sample pictures, update GitHub Pages docs."
 name: "Documentation Handoff"
-tools: [read, search, edit]
+tools: [read, search, edit,execute]
 user-invocable: true
 argument-hint: "Provide the completed component or files changed, expected public API, and any behavior caveats that must be documented."
 ---

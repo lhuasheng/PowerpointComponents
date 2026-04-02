@@ -5,6 +5,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
 from pptx_components.base import Component, _resolve, add_rect, add_text_box
+from pptx_components.components.chart_utils import default_theme_palette
 from pptx_components.theme import Theme
 
 
@@ -169,8 +170,9 @@ class ScatterPlot(Component):
         # Plot points
         x_min, x_max = self.x_range
         y_min, y_max = self.y_range
+        palette = default_theme_palette(t)
 
-        for data_x, data_y, label, color_rgb, size in self.points:
+        for idx, (data_x, data_y, label, color_rgb, size) in enumerate(self.points):
             # Normalize to [0, 1]
             norm_x = (data_x - x_min) / (x_max - x_min) if x_max > x_min else 0.5
             norm_y = 1.0 - ((data_y - y_min) / (y_max - y_min) if y_max > y_min else 0.5)
@@ -180,7 +182,7 @@ class ScatterPlot(Component):
             pt_y = plot_y + norm_y * plot_h
 
             # Draw point circle
-            pt_color = color_rgb or t.ACCENT
+            pt_color = color_rgb or palette[idx % len(palette)]
             add_rect(
                 slide, pt_x - size / 2, pt_y - size / 2, size, size,
                 fill_rgb=pt_color, radius=0.075

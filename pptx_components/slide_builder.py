@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import warnings
+from pathlib import Path
+
 from pptx import Presentation
+from pptx.util import Inches
 
 from pptx_components.base import Component, set_slide_background, _resolve
 from pptx_components.layout import Row
@@ -15,12 +19,36 @@ class SlideBuilder:
     """
 
     def __init__(self, prs: Presentation, theme: Theme | None = None):
+        self._prs = prs
         self.theme = _resolve(theme)
         # Use blank slide layout (index 6)
         blank_layout = prs.slide_layouts[6]
         self.slide = prs.slides.add_slide(blank_layout)
-        set_slide_background(self.slide, self.theme.BG)
+        bg_image = getattr(self.theme, "BG_IMAGE", None)
+        if bg_image:
+            bg_path = Path(bg_image)
+            if bg_path.exists():
+                self.slide.shapes.add_picture(
+                    str(bg_path),
+                    Inches(0),
+                    Inches(0),
+                    width=prs.slide_width,
+                    height=prs.slide_height,
+                )
+            else:
+                warnings.warn(f"Background image not found, using BG color: {bg_image}")
+                set_slide_background(self.slide, self.theme.BG)
+        else:
+            set_slide_background(self.slide, self.theme.BG)
         self.cursor_y: float = self.theme.MARGIN
+
+        logo_path = getattr(self.theme, "LOGO_PATH", None) or getattr(self.theme, "logo_path", None)
+        if logo_path:
+            logo_x = getattr(self.theme, "LOGO_X", getattr(self.theme, "logo_x", None))
+            logo_y = getattr(self.theme, "LOGO_Y", getattr(self.theme, "logo_y", None))
+            logo_w = getattr(self.theme, "LOGO_W", getattr(self.theme, "logo_w", None))
+            if logo_x is not None and logo_y is not None and logo_w is not None:
+                self.set_logo(str(logo_path), float(logo_x), float(logo_y), float(logo_w))
 
     # ── Internal ───────────────────────────────────────────────────────────
 
@@ -81,4 +109,14 @@ class SlideBuilder:
     def set_cursor(self, y: float) -> "SlideBuilder":
         """Manually position the cursor."""
         self.cursor_y = y
+        return self
+
+    def set_logo(self, path: str, x: float, y: float, w: float) -> "SlideBuilder":
+        """Place a logo image on this slide at inch-based coordinates."""
+        p = Path(path)
+        if not p.exists():
+            warnings.warn(f"Logo not found, skipping: {path}")
+            return self
+
+        self.slide.shapes.add_picture(str(p), Inches(x), Inches(y), width=Inches(w))
         return self

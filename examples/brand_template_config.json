@@ -1,0 +1,32 @@
+{
+  "bg": "#0B1C3D",
+  "surface": "#132B57",
+  "surface_alt": "#1B376E",
+  "text_primary": "#EAF1FF",
+  "text_secondary": "#B7C9EA",
+  "text_muted": "#8EA7D3",
+  "accent": "#2F80ED",
+  "accent_2": "#1FA2FF",
+  "accent_3": "#0052CC",
+  "accent_soft": "#6FB4FF",
+  "positive": "#26C281",
+  "negative": "#E35D6A",
+  "callout": {
+    "info": {
+      "fill": "#1F4F99",
+      "text": "#EAF1FF"
+    },
+    "warning": {
+      "fill": "#245A8D",
+      "text": "#EAF1FF"
+    },
+    "success": {
+      "fill": "#1D6A7B",
+      "text": "#EAF1FF"
+    },
+    "error": {
+      "fill": "#8A2E52",
+      "text": "#FDEFF5"
+    }
+  }
+}

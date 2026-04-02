@@ -1,12 +1,21 @@
-"""Demo deck — generates demo_dark.pptx and demo_light.pptx.
+"""Demo deck — quick run generates demo_quick.pptx.
 
 Run from the repo root:
     python examples/demo.py
+
+Run full deck generation:
+    python examples/demo.py --full
+
+Run Phase 3 validation:
+    python examples/demo.py --phase3
 """
 from __future__ import annotations
 
+import json
 import sys
 import os
+import tempfile
+import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pptx import Presentation
@@ -825,8 +834,108 @@ def build_deck(theme: pc.Theme, output_path: str) -> None:
     print(f"Saved: {output_path}")
 
 
+def build_quick_test_deck(output_path: str) -> None:
+    """Deterministic smoke deck for fast local validation."""
+    out_dir = os.path.dirname(__file__)
+    logo_path = os.path.join(out_dir, "demo_dark_slides", "slide_004.png")
+    theme = pc.BrandTheme(
+        accent=(24, 119, 242),
+        accent_2=(222, 72, 34),
+        accent_3=(20, 153, 117),
+        logo_path=logo_path,
+    )
+
+    prs = Presentation()
+    prs.slide_width = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_W)
+    prs.slide_height = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_H)
+    pc.set_theme(theme)
+
+    b = pc.SlideBuilder(prs)
+    b.set_logo(logo_path, x=11.2, y=0.25, w=1.6)
+    b.add(pc.SectionHeader("Quick Validation", badge_text="Phase 2"))
+    b.skip(0.12)
+    b.add(
+        pc.BarChart(
+            MONTHS,
+            {
+                "Revenue": [320, 380, 410, 470, 510, 580],
+                "Target": [350, 380, 400, 450, 490, 550],
+                "Forecast": [330, 395, 430, 485, 520, 600],
+            },
+            title="Multi-series Palette Check",
+        ),
+        h=3.0,
+    )
+
+    prs.save(output_path)
+    print(f"Saved: {output_path}")
+
+
+def build_phase3_validation(output_path: str) -> None:
+    """Exercise Phase 3 additions: BrandTheme.from_file and BG_IMAGE background."""
+    out_dir = os.path.dirname(__file__)
+    image_path = os.path.join(out_dir, "demo_dark_slides", "slide_004.png")
+
+    config = {
+        "bg": "#F7FAFC",
+        "surface": [255, 255, 255],
+        "accent": "#0C77AA",
+        "accent_2": "#C2410C",
+        "accent_3": [16, 185, 129],
+        "bg_image": image_path if os.path.exists(image_path) else os.path.join(out_dir, "missing_phase3_bg.png"),
+        "callout": {
+            "info": {"fill": "#DBEAFE", "text": "#1E3A8A"},
+            "success": {"fill": [220, 252, 231], "text": [22, 101, 52]},
+        },
+    }
+
+    cfg_path = ""
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".json",
+            prefix="phase3_theme_",
+            dir=out_dir,
+            delete=False,
+            encoding="utf-8",
+        ) as tmp:
+            json.dump(config, tmp)
+            cfg_path = tmp.name
+
+        theme = pc.BrandTheme.from_file(cfg_path)
+        if not os.path.exists(theme.BG_IMAGE or ""):
+            warnings.warn(f"Phase 3 demo BG image asset missing: {theme.BG_IMAGE}")
+
+        prs = Presentation()
+        prs.slide_width = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_W)
+        prs.slide_height = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_H)
+        pc.set_theme(theme)
+
+        b = pc.SlideBuilder(prs, theme=theme)
+        b.add(pc.SectionHeader("Phase 3 Validation", badge_text="from_file + BG_IMAGE"))
+        b.skip(0.15)
+        b.add_row(
+            pc.MetricCard("Theme Loader", "OK", "JSON", True),
+            pc.MetricCard("BG Image", "Enabled", "Experimental", True),
+            h=1.5,
+        )
+        b.skip(0.15)
+        b.add(pc.CalloutBox("This slide was created with BrandTheme.from_file().", "info"))
+
+        prs.save(output_path)
+        print(f"Saved: {output_path}")
+    finally:
+        if cfg_path and os.path.exists(cfg_path):
+            os.remove(cfg_path)
+
+
 if __name__ == "__main__":
     out_dir = os.path.dirname(__file__)
-    build_deck(pc.DarkTheme(),  os.path.join(out_dir, "demo_dark.pptx"))
-    build_deck(pc.LightTheme(), os.path.join(out_dir, "demo_light.pptx"))
+    if "--full" in sys.argv:
+        build_deck(pc.DarkTheme(),  os.path.join(out_dir, "demo_dark.pptx"))
+        build_deck(pc.LightTheme(), os.path.join(out_dir, "demo_light.pptx"))
+    elif "--phase3" in sys.argv:
+        build_phase3_validation(os.path.join(out_dir, "demo_phase3.pptx"))
+    else:
+        build_quick_test_deck(os.path.join(out_dir, "demo_quick.pptx"))
     print("Done.")
