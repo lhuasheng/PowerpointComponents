@@ -11,9 +11,12 @@ Run Phase 3 validation:
 """
 from __future__ import annotations
 
+import argparse
+from collections.abc import Iterator
+from contextlib import contextmanager
 import json
-import sys
 import os
+import sys
 import tempfile
 import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -21,6 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from pptx import Presentation
 
 import pptx_components as pc
+import pptx_components.slide_builder as slide_builder_module
 
 
 # ── Shared sample data ─────────────────────────────────────────────────────
@@ -818,40 +822,107 @@ SLIDES = [
 ]
 
 
-def build_deck(theme: pc.Theme, output_path: str) -> None:
+@contextmanager
+def _capture_slide_builders(validate_layout: bool) -> Iterator[list[pc.SlideBuilder]]:
+    builders: list[pc.SlideBuilder] = []
+
+    if not validate_layout:
+        yield builders
+        return
+
+    original_public_builder = pc.SlideBuilder
+    original_module_builder = slide_builder_module.SlideBuilder
+
+    class TrackingSlideBuilder(original_module_builder):
+        def __init__(self, *args, **kwargs):
+            kwargs["validate"] = kwargs.get("validate", False) or validate_layout
+            super().__init__(*args, **kwargs)
+            builders.append(self)
+
+    pc.SlideBuilder = TrackingSlideBuilder
+    slide_builder_module.SlideBuilder = TrackingSlideBuilder
+    try:
+        yield builders
+    finally:
+        pc.SlideBuilder = original_public_builder
+        slide_builder_module.SlideBuilder = original_module_builder
+
+
+def _print_and_raise_for_layout_issues(
+    builders: list[pc.SlideBuilder],
+    *,
+    validate_layout: bool,
+    strict_layout: bool,
+) -> None:
+    if not validate_layout:
+        return
+
+    report = pc.format_layout_validation_report(builders)
+    print(report)
+    if strict_layout:
+        pc.raise_for_layout_issues(builders, report=report)
+
+
+def build_deck(
+    theme: pc.Theme,
+    output_path: str,
+    *,
+    validate_layout: bool = False,
+    strict_layout: bool = False,
+) -> list[pc.SlideBuilder]:
     prs = Presentation()
     prs.slide_width = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_W)
     prs.slide_height = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_H)
     pc.set_theme(theme)
+    builders: list[pc.SlideBuilder] = []
 
     print(f"Building: {output_path}", flush=True)
     for idx, slide_fn in enumerate(SLIDES, start=1):
         print(f"  Rendering slide {idx}/{len(SLIDES)}: {slide_fn.__name__}", flush=True)
-        slide_fn(prs)
+        with _capture_slide_builders(validate_layout) as created_builders:
+            slide_fn(prs)
+        builders.extend(created_builders)
+
+    _print_and_raise_for_layout_issues(
+        builders,
+        validate_layout=validate_layout,
+        strict_layout=strict_layout,
+    )
 
     print("  Saving file...", flush=True)
     prs.save(output_path)
     print(f"Saved: {output_path}")
+    return builders
 
 
-def build_quick_test_deck(output_path: str) -> None:
+def build_quick_test_deck(
+    output_path: str,
+    *,
+    theme: pc.Theme | None = None,
+    validate_layout: bool = False,
+    strict_layout: bool = False,
+) -> list[pc.SlideBuilder]:
     """Deterministic smoke deck for fast local validation."""
     out_dir = os.path.dirname(__file__)
-    logo_path = os.path.join(out_dir, "demo_dark_slides", "slide_004.png")
-    theme = pc.BrandTheme(
-        accent=(24, 119, 242),
-        accent_2=(222, 72, 34),
-        accent_3=(20, 153, 117),
-        logo_path=logo_path,
-    )
+    if theme is None:
+        logo_path = os.path.join(out_dir, "demo_dark_slides", "slide_004.png")
+        theme = pc.BrandTheme(
+            accent=(24, 119, 242),
+            accent_2=(222, 72, 34),
+            accent_3=(20, 153, 117),
+            logo_path=logo_path,
+        )
+    else:
+        logo_path = getattr(theme, "LOGO_PATH", None) or getattr(theme, "logo_path", None)
 
     prs = Presentation()
     prs.slide_width = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_W)
     prs.slide_height = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_H)
     pc.set_theme(theme)
 
-    b = pc.SlideBuilder(prs)
-    b.set_logo(logo_path, x=11.2, y=0.25, w=1.6)
+    b = pc.SlideBuilder(prs, validate=validate_layout)
+    if logo_path:
+        b.set_logo(str(logo_path), x=11.2, y=0.25, w=1.6)
     b.add(pc.SectionHeader("Quick Validation", badge_text="Phase 2"))
     b.skip(0.12)
     b.add(
@@ -867,11 +938,24 @@ def build_quick_test_deck(output_path: str) -> None:
         h=3.0,
     )
 
+    builders = [b]
+    _print_and_raise_for_layout_issues(
+        builders,
+        validate_layout=validate_layout,
+        strict_layout=strict_layout,
+    )
+
     prs.save(output_path)
     print(f"Saved: {output_path}")
+    return builders
 
 
-def build_phase3_validation(output_path: str) -> None:
+def build_phase3_validation(
+    output_path: str,
+    *,
+    validate_layout: bool = False,
+    strict_layout: bool = False,
+) -> list[pc.SlideBuilder]:
     """Exercise Phase 3 additions: BrandTheme.from_file and BG_IMAGE background."""
     out_dir = os.path.dirname(__file__)
     image_path = os.path.join(out_dir, "demo_dark_slides", "slide_004.png")
@@ -911,7 +995,7 @@ def build_phase3_validation(output_path: str) -> None:
         prs.slide_height = __import__('pptx.util', fromlist=['Inches']).Inches(theme.SLIDE_H)
         pc.set_theme(theme)
 
-        b = pc.SlideBuilder(prs, theme=theme)
+        b = pc.SlideBuilder(prs, theme=theme, validate=validate_layout)
         b.add(pc.SectionHeader("Phase 3 Validation", badge_text="from_file + BG_IMAGE"))
         b.skip(0.15)
         b.add_row(
@@ -922,20 +1006,71 @@ def build_phase3_validation(output_path: str) -> None:
         b.skip(0.15)
         b.add(pc.CalloutBox("This slide was created with BrandTheme.from_file().", "info"))
 
+        builders = [b]
+        _print_and_raise_for_layout_issues(
+            builders,
+            validate_layout=validate_layout,
+            strict_layout=strict_layout,
+        )
+
         prs.save(output_path)
         print(f"Saved: {output_path}")
+        return builders
     finally:
         if cfg_path and os.path.exists(cfg_path):
             os.remove(cfg_path)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate demo decks for powerpointComponents.")
+    parser.add_argument("--full", action="store_true", help="Build the dark and light demo decks.")
+    parser.add_argument("--phase3", action="store_true", help="Build the Phase 3 validation deck.")
+    parser.add_argument(
+        "--validate-layout",
+        action="store_true",
+        help="Enable overflow validation and print a per-slide summary.",
+    )
+    parser.add_argument(
+        "--strict-layout",
+        action="store_true",
+        help="Enable layout validation and exit non-zero when any layout issues are found.",
+    )
+    args = parser.parse_args()
+
     out_dir = os.path.dirname(__file__)
-    if "--full" in sys.argv:
-        build_deck(pc.DarkTheme(),  os.path.join(out_dir, "demo_dark.pptx"))
-        build_deck(pc.LightTheme(), os.path.join(out_dir, "demo_light.pptx"))
-    elif "--phase3" in sys.argv:
-        build_phase3_validation(os.path.join(out_dir, "demo_phase3.pptx"))
-    else:
-        build_quick_test_deck(os.path.join(out_dir, "demo_quick.pptx"))
+    validate_layout = args.validate_layout or args.strict_layout
+
+    try:
+        if args.full:
+            build_deck(
+                pc.DarkTheme(),
+                os.path.join(out_dir, "demo_dark.pptx"),
+                validate_layout=validate_layout,
+                strict_layout=args.strict_layout,
+            )
+            build_deck(
+                pc.LightTheme(),
+                os.path.join(out_dir, "demo_light.pptx"),
+                validate_layout=validate_layout,
+                strict_layout=args.strict_layout,
+            )
+        elif args.phase3:
+            build_phase3_validation(
+                os.path.join(out_dir, "demo_phase3.pptx"),
+                validate_layout=validate_layout,
+                strict_layout=args.strict_layout,
+            )
+        else:
+            build_quick_test_deck(
+                os.path.join(out_dir, "demo_quick.pptx"),
+                validate_layout=validate_layout,
+                strict_layout=args.strict_layout,
+            )
+    except pc.LayoutValidationError:
+        raise SystemExit(1)
+
     print("Done.")
+
+
+if __name__ == "__main__":
+    main()

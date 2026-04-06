@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
 
 from pptx import Presentation
@@ -12,6 +13,20 @@ from pptx_components.layout import Row
 from pptx_components.theme import Theme, get_theme
 
 
+@dataclass(frozen=True)
+class LayoutIssue:
+    """Structured representation of an overflow issue found during layout."""
+
+    slide_number: int
+    severity: str
+    component_name: str
+    message: str
+    y: float
+    h: float
+    safe_bottom: float
+    overflow: float
+
+
 class SlideBuilder(GetAttr):
     """Clean API for composing a single slide from components.
 
@@ -21,12 +36,24 @@ class SlideBuilder(GetAttr):
 
     _default = "theme"
 
-    def __init__(self, prs: Presentation, theme: Theme | None = None):
+    def __init__(
+        self,
+        prs: Presentation,
+        theme: Theme | None = None,
+        validate: bool = False,
+        strict: bool = False,
+    ):
         self._prs = prs
         self.theme = _resolve(theme)
+        # strict mode always enables validation.
+        self.validate = validate or strict
+        self.strict = strict
+        self._slide_h = prs.slide_height.inches
         # Use blank slide layout (index 6)
         blank_layout = prs.slide_layouts[6]
         self.slide = prs.slides.add_slide(blank_layout)
+        self.slide_number = len(prs.slides)
+        self.layout_issues: list[LayoutIssue] = []
         bg_image = get_first_attr(self.theme, "BG_IMAGE")
         if bg_image:
             bg_path = Path(bg_image)
@@ -58,13 +85,61 @@ class SlideBuilder(GetAttr):
     def _content_width(self) -> float:
         return self.SLIDE_W - 2 * self.MARGIN
 
+    def _safe_bottom(self) -> float:
+        return self._slide_h - self.MARGIN
+
+    def _handle_overflow(
+        self,
+        *,
+        component: Component,
+        y: float,
+        h: float,
+        allow_overflow: bool,
+    ) -> None:
+        if not self.validate or allow_overflow:
+            return
+
+        safe_bottom = self._safe_bottom()
+        bottom = y + h
+        if bottom <= safe_bottom:
+            return
+
+        overflow = bottom - safe_bottom
+        comp_name = component.__class__.__name__
+        message = (
+            f"SlideBuilder overflow for {comp_name}: y+h={bottom:.2f}\" exceeds "
+            f"safe bottom {safe_bottom:.2f}\" by {overflow:.2f}\". "
+            f"Placement y={y:.2f}\", h={h:.2f}\". "
+            "Use allow_overflow=True to bypass for intentional overlays."
+        )
+
+        severity = "error" if self.strict else "warning"
+        self.layout_issues.append(
+            LayoutIssue(
+                slide_number=self.slide_number,
+                severity=severity,
+                component_name=comp_name,
+                message=message,
+                y=y,
+                h=h,
+                safe_bottom=safe_bottom,
+                overflow=overflow,
+            )
+        )
+
+        if self.strict:
+            raise ValueError(message)
+
+        warnings.warn(message, stacklevel=2)
+
     # ── Public API ─────────────────────────────────────────────────────────
 
     def add(self, component: Component,
             x: float | None = None,
             y: float | None = None,
             w: float | None = None,
-            h: float | None = None) -> "SlideBuilder":
+            h: float | None = None,
+            allow_overflow: bool = False) -> "SlideBuilder":
         """Render a component on the slide.
 
         Defaults:
@@ -75,6 +150,9 @@ class SlideBuilder(GetAttr):
 
         Passing an explicit y overrides the cursor for this call only
         (cursor is NOT advanced when y is explicitly provided).
+
+        When validation is enabled, placement is checked against safe bottom
+        bounds (slide height - margin). Use allow_overflow=True to bypass.
         """
         t = self.theme
         resolved_x = x if x is not None else t.MARGIN
@@ -84,6 +162,13 @@ class SlideBuilder(GetAttr):
         explicit_y = y is not None
         resolved_y = y if explicit_y else self.cursor_y
 
+        self._handle_overflow(
+            component=component,
+            y=resolved_y,
+            h=resolved_h,
+            allow_overflow=allow_overflow,
+        )
+
         component.render(self.slide, resolved_x, resolved_y, resolved_w, resolved_h, theme=t)
 
         if not explicit_y:
@@ -92,17 +177,19 @@ class SlideBuilder(GetAttr):
         return self  # fluent API
 
     def add_full(self, component: Component,
-                 h: float | None = None) -> "SlideBuilder":
+                 h: float | None = None,
+                 allow_overflow: bool = False) -> "SlideBuilder":
         """Add a component spanning the full content width at the current cursor."""
-        return self.add(component, h=h)
+        return self.add(component, h=h, allow_overflow=allow_overflow)
 
     def add_row(self, *components: Component,
                 h: float | None = None,
                 gap: float | None = None,
-                weights: list[float] | None = None) -> "SlideBuilder":
+                weights: list[float] | None = None,
+                allow_overflow: bool = False) -> "SlideBuilder":
         """Wrap components in a Row and add at the current cursor."""
         row = Row(*components, gap=gap, weights=weights)
-        return self.add(row, h=h)
+        return self.add(row, h=h, allow_overflow=allow_overflow)
 
     def skip(self, height: float) -> "SlideBuilder":
         """Advance the cursor by a fixed amount (manual spacing)."""

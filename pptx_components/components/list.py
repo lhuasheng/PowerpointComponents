@@ -25,13 +25,15 @@ class ListBlock(Component):
     def __init__(self, items: list[str],
                  style: str = "bullet",
                  checked: list[int] | None = None,
-                 title: str | None = None):
+                 title: str | None = None,
+                 style_overrides: dict[str, int | str | bool] | None = None):
         if style not in ("bullet", "number", "check"):
             raise ValueError(f"style must be 'bullet', 'number', or 'check'; got {style!r}")
         self.items = items
         self.style = style
         self.checked = set(checked or [])
         self.title = title
+        self.style_overrides = style_overrides or {}
 
     @property
     def min_height(self) -> float:
@@ -41,12 +43,19 @@ class ListBlock(Component):
                theme: Theme | None = None) -> None:
         t = _resolve(theme)
         cursor_y = y
+        o = self.style_overrides
+        title_size = int(o.get("title_size", t.SUBHEADING))
+        body_size = int(o.get("body_size", t.BODY))
+        title_bold = bool(o.get("title_bold", True))
+        override_font = o.get("font_name")
+        title_font = str(override_font) if override_font is not None else "Calibri Light"
+        body_font = str(override_font) if override_font is not None else "Calibri"
 
         # Title
         if self.title:
             add_text_box(slide, x, cursor_y, width, self.TITLE_H,
-                         self.title, t.SUBHEADING, bold=True,
-                         color_rgb=t.TEXT_PRIMARY, font_name="Calibri Light")
+                         self.title, title_size, bold=title_bold,
+                         color_rgb=t.TEXT_PRIMARY, font_name=title_font)
             cursor_y += self.TITLE_H
 
         # Items
@@ -64,16 +73,18 @@ class ListBlock(Component):
                 sq_x = x + (bullet_col_w - sq) / 2
                 add_rect(slide, sq_x, sq_y, sq, sq, fill_rgb=t.ACCENT)
                 add_text_box(slide, text_x, cursor_y, text_w, self.ITEM_H,
-                             item, t.BODY, color_rgb=t.TEXT_PRIMARY)
+                             item, body_size, color_rgb=t.TEXT_PRIMARY,
+                             font_name=body_font)
 
             elif self.style == "number":
                 # Accent-colored number
                 add_text_box(slide, x, cursor_y, bullet_col_w, self.ITEM_H,
-                             f"{i + 1}.", t.BODY, bold=True,
-                             color_rgb=t.ACCENT, font_name="Calibri",
+                             f"{i + 1}.", body_size, bold=True,
+                             color_rgb=t.ACCENT, font_name=body_font,
                              alignment=PP_ALIGN.RIGHT)
                 add_text_box(slide, text_x, cursor_y, text_w, self.ITEM_H,
-                             item, t.BODY, color_rgb=t.TEXT_PRIMARY)
+                             item, body_size, color_rgb=t.TEXT_PRIMARY,
+                             font_name=body_font)
 
             elif self.style == "check":
                 is_checked = i in self.checked
@@ -82,11 +93,11 @@ class ListBlock(Component):
                 item_color = t.TEXT_MUTED if is_checked else t.TEXT_PRIMARY
 
                 add_text_box(slide, x, cursor_y, bullet_col_w, self.ITEM_H,
-                             glyph, t.BODY, bold=is_checked,
-                             color_rgb=glyph_color, font_name="Calibri",
+                             glyph, body_size, bold=is_checked,
+                             color_rgb=glyph_color, font_name=body_font,
                              alignment=PP_ALIGN.CENTER)
                 add_text_box(slide, text_x, cursor_y, text_w, self.ITEM_H,
-                             item, t.BODY, color_rgb=item_color,
-                             italic=is_checked)
+                             item, body_size, color_rgb=item_color,
+                             italic=is_checked, font_name=body_font)
 
             cursor_y += self.ITEM_H

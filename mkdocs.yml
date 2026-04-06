@@ -77,6 +77,7 @@ nav:
           - list.py: components/modules/list.md
           - metric.py: components/modules/metric.md
           - narrative.py: components/modules/narrative.md
+          - newsroom.py: components/modules/newsroom.md
           - navigation.py: components/modules/navigation.md
           - progress.py: components/modules/progress.md
           - range_indicator.py: components/modules/range_indicator.md

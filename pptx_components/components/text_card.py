@@ -25,6 +25,7 @@ class TextCard(Component):
         body: str,
         title: str | None = None,
         style: str = "default",
+        style_overrides: dict[str, int | str | bool] | None = None,
     ):
         if style not in _VALID_STYLES:
             raise ValueError(
@@ -33,6 +34,7 @@ class TextCard(Component):
         self.body = body
         self.title = title
         self.style = style
+        self.style_overrides = style_overrides or {}
 
     @property
     def min_height(self) -> float:
@@ -50,6 +52,11 @@ class TextCard(Component):
         t = _resolve(theme)
         pad = t.SM
         bar_w = 0.05
+        o = self.style_overrides
+        title_size = int(o.get("title_size", t.BODY))
+        body_size = int(o.get("body_size", t.BODY))
+        title_bold = bool(o.get("title_bold", True))
+        font_name = str(o.get("font_name", "Calibri"))
 
         # ── Resolve per-style colors ───────────────────────────────────────
         if self.style == "default":
@@ -80,15 +87,15 @@ class TextCard(Component):
             title_h = t.MD + t.XS
             add_text_box(
                 slide, content_x, cursor_y, content_w, title_h,
-                self.title, t.BODY, bold=True,
-                color_rgb=title_rgb, font_name="Calibri",
+                self.title, title_size, bold=title_bold,
+                color_rgb=title_rgb, font_name=font_name,
             )
             cursor_y += title_h + t.SM
 
         body_h = height - (cursor_y - y) - pad
         add_text_box(
             slide, content_x, cursor_y, content_w, max(body_h, t.MD),
-            self.body, t.BODY, bold=False,
-            color_rgb=body_rgb, font_name="Calibri",
+            self.body, body_size, bold=False,
+            color_rgb=body_rgb, font_name=font_name,
             word_wrap=True,
         )

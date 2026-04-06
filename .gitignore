@@ -4,14 +4,33 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Python packaging artifacts
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+
 # Build and tooling artifacts
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.ipynb_checkpoints/
 
 # OS/editor files
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+
+# Local environment and logs
+.env
+.env.*
+*.log
 
 # Generated demo export images
 examples/*_slides/

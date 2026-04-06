@@ -87,6 +87,50 @@ Signature:
 SectionHeader(text: str, badge_text: str | None = None)
 ```
 
+## Newsroom Chrome
+
+### NewsroomStrap
+
+Import: `pc.NewsroomStrap`
+
+Signature:
+
+```python
+NewsroomStrap(
+    text: str = "WORLD DESK | DEVELOPING",
+    align: str = "center",  # left | center | right
+)
+```
+
+### AttributionFooter
+
+Import: `pc.AttributionFooter`
+
+Signature:
+
+```python
+AttributionFooter(text: str, align: str = "left")
+```
+
+### BylineDateline
+
+Import: `pc.BylineDateline`
+
+Signature:
+
+```python
+BylineDateline(
+    byline: str | None = None,
+    dateline: str | None = None,
+    separator: str = " | ",
+    align: str = "left",
+)
+```
+
+Notes:
+
+- no-op when both `byline` and `dateline` are empty.
+
 ## Metrics
 
 ### MetricCard
@@ -330,6 +374,42 @@ ImageBlock(
     border_rgb: tuple[int, int, int] | None = None,
     border_width_pt: float = 1.0,
 )
+```
+
+### ImageCard
+
+Import: `pc.ImageCard`
+
+Signature:
+
+```python
+ImageCard(
+    image_path: str,
+    caption: str | None = None,
+    badge_text: str | None = None,
+    mode: str = "contain",  # contain | stretch | fit_width | fit_height
+    border_rgb: tuple[int, int, int] | None = None,
+)
+```
+
+### ImageStrip
+
+Import: `pc.ImageStrip`
+
+Signature:
+
+```python
+ImageStrip(
+    items: list[tuple[str, str | None] | tuple[str, str | None, str | None]],
+    gap: float = 0.1,
+    caption_position: str = "below",  # below | overlay
+)
+```
+
+Example item:
+
+```python
+("path/to/image.jpg", "Caption", "OPTIONAL BADGE")
 ```
 
 ### Legend

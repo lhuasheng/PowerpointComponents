@@ -117,3 +117,56 @@ b.add(
     h=2.2,
 )
 ```
+
+## 6) Image Story Strip Pattern
+
+```python
+b.add(
+    pc.ImageStrip(
+        [
+            ("examples/assets/situation_briefing/cna_singapore.jpg", "Singapore Parliament", "SINGAPORE"),
+            ("examples/assets/situation_briefing/cna_iran.jpg", "Iran Position", "IRAN"),
+            ("examples/assets/situation_briefing/cna_south_pars.jpg", "South Pars Strike", "ENERGY"),
+        ],
+        gap=0.1,
+        caption_position="below",
+    ),
+    h=1.3,
+)
+```
+
+## 7) Newsroom Chrome Pattern
+
+```python
+pc.NewsroomStrap("WORLD DESK | DEVELOPING").render(
+    b.slide,
+    x=9.42,
+    y=0.19,
+    width=3.4,
+    height=0.34,
+    theme=pc.get_theme(),
+)
+
+pc.BylineDateline(
+    byline="CNA synthesis for policy and enterprise leadership",
+    dateline="06 Apr 2026",
+).render(
+    b.slide,
+    x=0.5,
+    y=0.9,
+    width=8.8,
+    height=0.18,
+    theme=pc.get_theme(),
+)
+
+pc.AttributionFooter(
+    "Source: CNA reporting, 6 Apr 2026 | Three linked articles used for facts and imagery",
+).render(
+    b.slide,
+    x=0.52,
+    y=7.2,
+    width=12.3,
+    height=0.24,
+    theme=pc.get_theme(),
+)
+```

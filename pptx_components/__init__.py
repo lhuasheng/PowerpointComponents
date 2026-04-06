@@ -17,6 +17,12 @@ from pptx_components.theme import (
 from pptx_components.base import Component
 from pptx_components.layout import Row, Column, Grid, Container
 from pptx_components.slide_builder import SlideBuilder
+from pptx_components.validation import (
+    LayoutValidationError,
+    collect_layout_issues,
+    format_layout_validation_report,
+    raise_for_layout_issues,
+)
 
 from pptx_components.components.title import TitleBlock, SectionHeader
 from pptx_components.components.metric import MetricCard, BigStat
@@ -30,6 +36,10 @@ from pptx_components.components.divider import Divider, Spacer
 from pptx_components.components.progress import ProgressBar, StatusBadge
 from pptx_components.components.navigation import TabsPanel, StepFlow, AccordionBlock, FeatureGrid
 from pptx_components.components.image import ImageBlock
+from pptx_components.components.image_card import ImageCard
+from pptx_components.components.image_strip import ImageStrip
+from pptx_components.components.editorial_headline import EditorialHeadline
+from pptx_components.components.newsroom import NewsroomStrap, AttributionFooter, BylineDateline
 from pptx_components.components.legend import Legend
 from pptx_components.components.kpi_grid import KPIGrid
 from pptx_components.components.timeline import Timeline
@@ -72,6 +82,7 @@ __all__ = [
     "Component",
     "Row", "Column", "Grid", "Container",
     "SlideBuilder",
+    "LayoutValidationError", "collect_layout_issues", "format_layout_validation_report", "raise_for_layout_issues",
     "TitleBlock", "SectionHeader",
     "MetricCard", "BigStat", "SparklineCard",
     "DataTable",
@@ -81,7 +92,7 @@ __all__ = [
     "Divider", "Spacer",
     "ProgressBar", "StatusBadge",
     "TabsPanel", "StepFlow", "AccordionBlock", "FeatureGrid",
-    "ImageBlock", "Legend", "KPIGrid",
+    "ImageBlock", "ImageCard", "ImageStrip", "EditorialHeadline", "NewsroomStrap", "AttributionFooter", "BylineDateline", "Legend", "KPIGrid",
     "Timeline", "ComparisonPanel",
     "Heatmap", "RangeIndicator", "CodeBlock", "Annotation", "WaterfallChart", "GanttChart", "FunnelChart", "RadarChart",
     "TextCard",    "ScatterPlot", "GroupedTable",
