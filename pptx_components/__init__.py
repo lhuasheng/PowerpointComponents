@@ -53,6 +53,12 @@ from pptx_components.components.narrative import (
     build_narrative_slides,
 )
 from pptx_components.export import export_slides
+from pptx_components.reverse import (
+    ReverseWarning,
+    ReverseResult,
+    PresentationReverser,
+    reverse_pptx_to_script,
+)
 from pptx_components.master_builder import MasterPresentation, MasterSlide
 
 try:
@@ -81,4 +87,5 @@ __all__ = [
     "TextCard",    "ScatterPlot", "GroupedTable",
     "NarrativePage", "NarrativeTwoColumnPage", "LongNarrativeBlock", "paginate_narrative", "build_narrative_slides",
     "export_slides",
+    "ReverseWarning", "ReverseResult", "PresentationReverser", "reverse_pptx_to_script",
 ]

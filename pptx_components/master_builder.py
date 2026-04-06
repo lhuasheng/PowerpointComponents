@@ -71,8 +71,20 @@ class MasterSlide(GetAttr):
         for ph in self.slide.placeholders:
             if ph.placeholder_format.idx == idx:
                 tf = ph.text_frame
-                tf.clear()
-                tf.text = text
+                # Clear runs within paragraphs to preserve paragraph formatting
+                for paragraph in tf.paragraphs:
+                    for run in paragraph.runs:
+                        r = run._r
+                        r.getparent().remove(r)
+                # Remove all paragraphs after the first
+                while len(tf.paragraphs) > 1:
+                    p = tf.paragraphs[1]._element
+                    p.getparent().remove(p)
+                # Set text on the first paragraph, preserving its formatting
+                if tf.paragraphs:
+                    tf.paragraphs[0].text = text
+                else:
+                    tf.text = text
                 return self
         warnings.warn(
             f"Placeholder idx={idx} not found on this slide — skipping.",
@@ -84,6 +96,19 @@ class MasterSlide(GetAttr):
         """Set multiple placeholders at once.  *mapping* is ``{idx: text}``."""
         for idx, text in mapping.items():
             self.set_placeholder(idx, text)
+        return self
+
+    def hide_placeholder(self, idx: int) -> "MasterSlide":
+        """Remove the placeholder shape at *idx* from the slide entirely."""
+        sp_tree = self.slide.shapes._spTree
+        for ph in list(self.slide.placeholders):
+            if ph.placeholder_format.idx == idx:
+                sp_tree.remove(ph._element)
+                return self
+        warnings.warn(
+            f"Placeholder idx={idx} not found on this slide — skipping.",
+            stacklevel=2,
+        )
         return self
 
     # ── Component placement ────────────────────────────────────────────────
