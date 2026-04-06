@@ -83,7 +83,7 @@ def _add_image_strip(slide, theme: pc.Theme) -> None:
         (SOURCE_IMAGE_PATHS[1], "Iran Position", "IRAN"),
         (SOURCE_IMAGE_PATHS[2], "South Pars Strike", "ENERGY"),
     ]
-    pc.ImageStrip(strip_items, gap=0.1, caption_position="below").render(
+    pc.ImageStrip(strip_items, gap=0.1, caption_position="below", image_mode="stretch").render(
         slide,
         x=0.5,
         y=1.24,
@@ -122,10 +122,10 @@ def _add_detail_photo_card(
         mode="stretch",
     ).render(
         slide,
-        x=9.5,
-        y=0.6,
-        width=3.5,
-        height=1.05,
+        x=10.08,
+        y=0.72,
+        width=2.72,
+        height=0.92,
         theme=theme,
     )
 
@@ -330,7 +330,7 @@ def build_escalation_slide(prs: Presentation, validate_layout: bool = False) -> 
                 "Messaging: war is ongoing as negotiations continue."
             ),
         ),
-        h=1.3,
+        h=2.1,
         weights=[1.0, 1.0],
     )
 
@@ -374,24 +374,24 @@ def build_executive_brief_slide(prs: Presentation, validate_layout: bool = False
     b.add_row(
         pc.ListBlock(
             [
-                "Ceasefire talks stalled; Iran rejects temporary measures.",
-                "Trump's 8pm EDT Tuesday deadline likely to be extended (historical pattern).",
-                "Petrochemical and steel targeting signals Israel prioritizes asymmetric economic damage.",
-                "Global LNG markets show modest volatility; Hormuz transit remains open.",
+                "Ceasefire talks remain stalled; Iran rejects temporary measures.",
+                "Trump's Tuesday deadline is likely to slip again.",
+                "Israeli targeting still focuses on economic and industrial pressure.",
+                "LNG volatility is modest and Hormuz transit remains open.",
             ],
             style="bullet",
             title="Current Facts",
         ),
         pc.ListBlock(
             [
-                "HIGH: Prolonged supply-route uncertainty pushes energy costs up 5–15% Q2–Q3.",
-                "MEDIUM: Regional escalation (Yemen, Iraq, Gulf partners) could widen conflict.",
-                "MEDIUM: Ceasefire breakthrough allows gradual cost normalization.",
+                "HIGH: Extended route uncertainty lifts energy costs through Q2–Q3.",
+                "MEDIUM: Wider regional involvement could broaden the conflict.",
+                "MEDIUM: A breakthrough could gradually normalize costs.",
             ],
             style="bullet",
             title="Key Scenarios",
         ),
-        h=1.28,
+        h=1.46,
         weights=[1.05, 0.95],
     )
 
@@ -403,15 +403,15 @@ def build_executive_brief_slide(prs: Presentation, validate_layout: bool = False
     b.add(
         pc.ListBlock(
             [
-                "Activate energy/logistics cost pass-through conversations with finance and procurement teams.",
-                "Prepare 2–3 contingency supply chain scenarios (extended disruption, regional spread, normalization).",
-                "Schedule a briefing with board or C-suite advisors by end of week.",
-                "Monitor Singapore government policy updates on price controls or subsidy announcements.",
+                "Align finance and procurement on energy and logistics cost pass-through triggers.",
+                "Prepare three supply-chain scenarios: extended disruption, regional spread, and normalization.",
+                "Book a board or C-suite risk briefing before week end.",
+                "Track Singapore policy moves on price controls, subsidies, and market support.",
             ],
             style="number",
             title="Immediate Actions (Next 72 Hours)",
         ),
-        h=1.58,
+        h=1.8,
     )
 
     b.add(
@@ -419,7 +419,7 @@ def build_executive_brief_slide(prs: Presentation, validate_layout: bool = False
             "Next briefing recommended: Tuesday evening (post-Trump announcement) and Friday (weekly risk review).",
             style="info",
         ),
-        h=0.5,
+        h=0.42,
     )
 
     _add_sources_footer(b.slide, theme)

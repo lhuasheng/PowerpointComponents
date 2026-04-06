@@ -60,6 +60,8 @@ class Timeline(Component):
         n = len(self.events)
         inner_h = max(0.0, (y + height) - cursor_y)
         line_y = cursor_y + inner_h * 0.53
+        label_w = 1.7
+        edge_pad = 0.03
 
         left_pad = 0.2
         right_pad = 0.2
@@ -91,11 +93,12 @@ class Timeline(Component):
                 card_y = min(y + height - card_h, line_y + 0.12)
 
             text_color = t.TEXT_PRIMARY if status in ("done", "current", "risk") else t.TEXT_SECONDARY
+            label_x = max(x + edge_pad, min(centers[idx] - (label_w / 2), x + width - label_w - edge_pad))
             add_text_box(
                 slide,
-                centers[idx] - 0.85,
+                label_x,
                 card_y,
-                1.7,
+                label_w,
                 0.2,
                 date_label,
                 t.CAPTION,
@@ -106,9 +109,9 @@ class Timeline(Component):
             )
             add_text_box(
                 slide,
-                centers[idx] - 0.85,
+                label_x,
                 card_y + 0.2,
-                1.7,
+                label_w,
                 0.3,
                 title,
                 t.CAPTION,

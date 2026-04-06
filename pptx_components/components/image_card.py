@@ -4,10 +4,10 @@ from pathlib import Path
 import warnings
 
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
-from pptx_components.base import Component, _resolve, add_rect
+from pptx_components.base import Component, _resolve, add_rect, set_text_frame_margins
 from pptx_components.theme import Theme
 
 
@@ -69,19 +69,29 @@ class ImageCard(Component):
         if not self.badge_text:
             return
 
-        badge_h = 0.2
-        est = 0.5 + (0.055 * len(self.badge_text))
-        badge_w = min(max(0.9, est), max(0.9, width - 0.08))
+        badge_h = 0.24
+        est = 0.58 + (0.055 * len(self.badge_text))
+        badge_w = min(max(1.0, est), max(1.0, width - 0.08))
 
         badge = add_rect(slide, x + 0.04, y + 0.04, badge_w, badge_h, fill_rgb=theme.ACCENT, radius=0.25)
         tf = badge.text_frame
         tf.clear()
+        tf.word_wrap = False
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        set_text_frame_margins(tf, left=0.03, top=0.0, right=0.03, bottom=0.0)
         p = tf.paragraphs[0]
         p.alignment = PP_ALIGN.CENTER
         run = p.add_run()
         run.text = self.badge_text
         run.font.name = "Calibri"
-        run.font.size = Pt(theme.CAPTION)
+        font_size = theme.CAPTION
+        available_w = max(badge_w - 0.06, 0.3)
+        while font_size > 8:
+            est_text_w = len(self.badge_text) * (font_size / 72.0) * 0.58
+            if est_text_w <= available_w:
+                break
+            font_size -= 1
+        run.font.size = Pt(font_size)
         run.font.bold = True
         run.font.color.rgb = RGBColor(255, 255, 255)
 

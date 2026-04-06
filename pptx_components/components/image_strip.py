@@ -22,12 +22,16 @@ class ImageStrip(Component):
         items: Sequence[ImageStripItem],
         gap: float = 0.1,
         caption_position: str = "below",
+        image_mode: str = "contain",
     ):
         if caption_position not in ("below", "overlay"):
             raise ValueError("caption_position must be 'below' or 'overlay'")
+        if image_mode not in ("contain", "stretch", "fit_width", "fit_height"):
+            raise ValueError("image_mode must be 'contain', 'stretch', 'fit_width', or 'fit_height'")
         self.items = list(items)
         self.gap = gap
         self.caption_position = caption_position
+        self.image_mode = image_mode
 
     @property
     def min_height(self) -> float:
@@ -107,7 +111,7 @@ class ImageStrip(Component):
                 image_path=image_path,
                 caption=card_caption,
                 badge_text=badge_text,
-                mode="contain",
+                mode=self.image_mode,
                 border_rgb=None,
             )
             card.render(slide, item_x, y, card_w, height, theme=t)
