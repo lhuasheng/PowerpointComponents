@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Mapping
 
+from pptx_components.delegation import GetAttr
+
 
 class Theme(ABC):
     # ── Typography scale (points) ──────────────────────────────────────────
@@ -515,8 +517,10 @@ PATCHABLE_THEME_KEYS = {
 }
 
 
-class PatchedTheme(Theme):
+class PatchedTheme(Theme, GetAttr):
     """Theme wrapper that applies token-level overrides on top of a base theme."""
+
+    _default = "_base"
 
     def __init__(self, base: Theme, patch: Mapping[str, object]):
         unknown = [k for k in patch if k not in PATCHABLE_THEME_KEYS]

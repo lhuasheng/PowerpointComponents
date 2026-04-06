@@ -7,16 +7,19 @@ from pptx import Presentation
 from pptx.util import Inches
 
 from pptx_components.base import Component, set_slide_background, _resolve
+from pptx_components.delegation import GetAttr, get_first_attr
 from pptx_components.layout import Row
 from pptx_components.theme import Theme, get_theme
 
 
-class SlideBuilder:
+class SlideBuilder(GetAttr):
     """Clean API for composing a single slide from components.
 
     Tracks a vertical cursor so callers can `add()` components sequentially
     without manually computing y-offsets.
     """
+
+    _default = "theme"
 
     def __init__(self, prs: Presentation, theme: Theme | None = None):
         self._prs = prs
@@ -24,7 +27,7 @@ class SlideBuilder:
         # Use blank slide layout (index 6)
         blank_layout = prs.slide_layouts[6]
         self.slide = prs.slides.add_slide(blank_layout)
-        bg_image = getattr(self.theme, "BG_IMAGE", None)
+        bg_image = get_first_attr(self.theme, "BG_IMAGE")
         if bg_image:
             bg_path = Path(bg_image)
             if bg_path.exists():
@@ -37,23 +40,23 @@ class SlideBuilder:
                 )
             else:
                 warnings.warn(f"Background image not found, using BG color: {bg_image}")
-                set_slide_background(self.slide, self.theme.BG)
+                set_slide_background(self.slide, self.BG)
         else:
-            set_slide_background(self.slide, self.theme.BG)
-        self.cursor_y: float = self.theme.MARGIN
+            set_slide_background(self.slide, self.BG)
+        self.cursor_y: float = self.MARGIN
 
-        logo_path = getattr(self.theme, "LOGO_PATH", None) or getattr(self.theme, "logo_path", None)
+        logo_path = get_first_attr(self.theme, "LOGO_PATH", "logo_path")
         if logo_path:
-            logo_x = getattr(self.theme, "LOGO_X", getattr(self.theme, "logo_x", None))
-            logo_y = getattr(self.theme, "LOGO_Y", getattr(self.theme, "logo_y", None))
-            logo_w = getattr(self.theme, "LOGO_W", getattr(self.theme, "logo_w", None))
+            logo_x = get_first_attr(self.theme, "LOGO_X", "logo_x")
+            logo_y = get_first_attr(self.theme, "LOGO_Y", "logo_y")
+            logo_w = get_first_attr(self.theme, "LOGO_W", "logo_w")
             if logo_x is not None and logo_y is not None and logo_w is not None:
                 self.set_logo(str(logo_path), float(logo_x), float(logo_y), float(logo_w))
 
     # ── Internal ───────────────────────────────────────────────────────────
 
     def _content_width(self) -> float:
-        return self.theme.SLIDE_W - 2 * self.theme.MARGIN
+        return self.SLIDE_W - 2 * self.MARGIN
 
     # ── Public API ─────────────────────────────────────────────────────────
 

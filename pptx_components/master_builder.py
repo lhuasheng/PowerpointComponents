@@ -31,13 +31,16 @@ from pptx import Presentation
 from pptx.util import Inches
 
 from pptx_components.base import Component, _resolve
+from pptx_components.delegation import GetAttr
 from pptx_components.layout import Row
 from pptx_components.theme import Theme
 
 
 # ── Single-slide editor ────────────────────────────────────────────────────
 
-class MasterSlide:
+class MasterSlide(GetAttr):
+    _default = "theme"
+
     """Fluent editor for a single slide that inherits a master layout.
 
     Returned by :meth:`MasterPresentation.add_slide`.  Provides the same
@@ -118,8 +121,7 @@ class MasterSlide:
         component.render(self.slide, resolved_x, resolved_y, resolved_w, resolved_h, theme=t)
 
         if not explicit_y:
-            gap = getattr(t, "SM", 0.2)
-            self.cursor_y += resolved_h + gap
+            self.cursor_y += resolved_h + t.SM
 
         return self
 

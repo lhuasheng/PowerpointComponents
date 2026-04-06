@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Mapping
 
 from pptx_components.base import Component, add_rect, _resolve
+from pptx_components.delegation import GetAttr
 from pptx_components.theme import Theme, apply_theme_patch
 
 
@@ -163,12 +164,14 @@ class Grid(Component):
 
 # ── Container ──────────────────────────────────────────────────────────────
 
-class Container(Component):
+class Container(Component, GetAttr):
     """Draws a background rect then renders a child within padded bounds.
 
     This is the *only* place that implements background-drawing + padding.
     CalloutBox, QuoteBlock, etc. are built on top of this.
     """
+
+    _default = "_theme_ctx"
 
     def __init__(self, child: Component,
                  padding: float | None = None,
@@ -184,27 +187,32 @@ class Container(Component):
         self.radius = radius
         self.local_theme = local_theme
         self.theme_patch = dict(theme_patch) if theme_patch is not None else None
+        self._theme_ctx = self._scoped_theme(None)
 
     def _scoped_theme(self, parent_theme: Theme | None) -> Theme:
         base = self.local_theme if self.local_theme is not None else _resolve(parent_theme)
         return apply_theme_patch(base, self.theme_patch)
 
-    def _pad(self, t: Theme) -> float:
-        return self._padding if self._padding is not None else t.MD
+    def _set_theme_ctx(self, parent_theme: Theme | None) -> Theme:
+        self._theme_ctx = self._scoped_theme(parent_theme)
+        return self._theme_ctx
+
+    def _pad(self) -> float:
+        return self._padding if self._padding is not None else self.MD
 
     @property
     def min_height(self) -> float:
         return self.min_height_for()
 
     def min_height_for(self, theme: Theme | None = None) -> float:
-        t = self._scoped_theme(theme)
-        return self.child.min_height_for(t) + 2 * self._pad(t)
+        t = self._set_theme_ctx(theme)
+        return self.child.min_height_for(t) + 2 * self._pad()
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
-        t = self._scoped_theme(theme)
-        pad = self._pad(t)
-        fill = self.fill_rgb if self.fill_rgb is not None else t.SURFACE
+        t = self._set_theme_ctx(theme)
+        pad = self._pad()
+        fill = self.fill_rgb if self.fill_rgb is not None else self.SURFACE
 
         bg = add_rect(slide, x, y, width, height, fill_rgb=fill, radius=self.radius)
 
