@@ -80,30 +80,19 @@ from pptx_components.reverse import (
 from pptx_components.master_builder import MasterPresentation, MasterSlide
 
 # ── Populate the dynamic registry after all component imports ─────────────────
-def _populate_dynamic_registry() -> None:
-    _reg = {
-        "TitleBlock": TitleBlock,
-        "SectionHeader": SectionHeader,
-        "MetricCard": MetricCard,
-        "KPIGrid": KPIGrid,
-        "BarChart": BarChart,
-        "LineChart": LineChart,
-        "PieChart": PieChart,
-        "DonutChart": DonutChart,
-        "ListBlock": ListBlock,
-        "CalloutBox": CalloutBox,
-        "QuoteBlock": QuoteBlock,
-        "TextCard": TextCard,
-        "ProgressBar": ProgressBar,
-        "StepFlow": StepFlow,
-        "FeatureGrid": FeatureGrid,
-        "DataTable": DataTable,
-        "FlowchartDiagram": FlowchartDiagram,
-    }
-    for name, cls in _reg.items():
-        register_component(name, cls)
-
-_populate_dynamic_registry()
+for _name, _cls in [
+    ("TitleBlock", TitleBlock), ("SectionHeader", SectionHeader),
+    ("MetricCard", MetricCard), ("KPIGrid", KPIGrid),
+    ("BarChart", BarChart), ("LineChart", LineChart),
+    ("PieChart", PieChart), ("DonutChart", DonutChart),
+    ("ListBlock", ListBlock), ("CalloutBox", CalloutBox),
+    ("QuoteBlock", QuoteBlock), ("TextCard", TextCard),
+    ("ProgressBar", ProgressBar), ("StepFlow", StepFlow),
+    ("FeatureGrid", FeatureGrid), ("DataTable", DataTable),
+    ("FlowchartDiagram", FlowchartDiagram),
+]:
+    register_component(_name, _cls)
+del _name, _cls
 
 try:
     __version__ = _package_version("pptx-components")

@@ -8,6 +8,7 @@ from pptx.util import Inches, Pt
 from pptx_components.base import (
     Component, _resolve,
     add_rect, add_text_box,
+    apply_fill, apply_no_line,
     set_font, set_text_frame_margins,
 )
 from pptx_components.theme import Theme
@@ -24,6 +25,20 @@ _SHAPE_FOR_TYPE = {
     "terminal": _SHAPE_OVAL,
     "data":     _SHAPE_ROUNDED,
 }
+
+
+def _draw_l_connector(
+    slide, sx: float, sy: float, ex: float, ey: float,
+    thickness: float, line_color: tuple,
+) -> None:
+    """Draw an L-shaped connector from (sx, sy) to (ex, ey) using two rect segments."""
+    mid_y = (sy + ey) / 2
+    if sy <= mid_y:
+        add_rect(slide, sx - thickness / 2, sy, thickness, mid_y - sy, fill_rgb=line_color)
+    x_lo, x_hi = min(sx, ex), max(sx, ex)
+    add_rect(slide, x_lo, mid_y - thickness / 2, x_hi - x_lo, thickness, fill_rgb=line_color)
+    if mid_y <= ey:
+        add_rect(slide, ex - thickness / 2, mid_y, thickness, ey - mid_y, fill_rgb=line_color)
 
 
 class FlowchartDiagram(Component):
@@ -126,27 +141,27 @@ class FlowchartDiagram(Component):
         nw = self.node_width
         nh = self.node_height
 
-        # Compute node center positions
         node_cx: dict[str, float] = {}
         node_cy: dict[str, float] = {}
 
         for lev, node_ids in sorted(self._by_level.items()):
             n = len(node_ids)
+            if n == 1:
+                start_cx = x + width / 2
+                col_step = 0.0
+            else:
+                total_w = n * nw + (n - 1) * self.h_gap
+                start_cx = x + (width - total_w) / 2 + nw / 2
+                col_step = nw + self.h_gap
+            cy = y + lev * (nh + self.v_gap) + nh / 2
             for col_idx, nid in enumerate(node_ids):
-                if n == 1:
-                    cx = x + width / 2
-                else:
-                    total_w = n * nw + (n - 1) * self.h_gap
-                    start_cx = x + (width - total_w) / 2 + nw / 2
-                    cx = start_cx + col_idx * (nw + self.h_gap)
-                cy = y + lev * (nh + self.v_gap) + nh / 2
-                node_cx[nid] = cx
+                node_cx[nid] = start_cx + col_idx * col_step
                 node_cy[nid] = cy
 
         line_color = t.TEXT_MUTED
         thickness = 0.025
 
-        # Draw connectors first (so nodes render on top)
+        # so nodes render on top
         drawn: set[tuple[str, str]] = set()
         for edge in self.edges:
             fid, tid = edge["from"], edge["to"]
@@ -160,59 +175,38 @@ class FlowchartDiagram(Component):
 
             fcx, fcy = node_cx[fid], node_cy[fid]
             tcx, tcy = node_cx[tid], node_cy[tid]
-            flev = self._level.get(fid, 0)
-            tlev = self._level.get(tid, 0)
+            flev = self._level[fid]
+            tlev = self._level[tid]
 
-            # Arrowhead tip sits at the top edge of the target node
             tip_y = tcy - nh / 2
 
             if flev == tlev and abs(fcx - tcx) > 0.1:
-                # Same level → L-shape from side of source to top of target
+                # same level → L-shape from side of source to top of target
                 sx = fcx + (nw / 2 if fcx < tcx else -nw / 2)
-                sy = fcy
-                ex = tcx
-                ey = tip_y - thickness
-                mid_y = (sy + ey) / 2
-                if sy <= mid_y:
-                    add_rect(slide, sx - thickness / 2, sy, thickness, mid_y - sy, fill_rgb=line_color)
-                x_lo, x_hi = min(sx, ex), max(sx, ex)
-                add_rect(slide, x_lo, mid_y - thickness / 2, x_hi - x_lo, thickness, fill_rgb=line_color)
-                if mid_y <= ey:
-                    add_rect(slide, ex - thickness / 2, mid_y, thickness, ey - mid_y, fill_rgb=line_color)
+                _draw_l_connector(slide, sx, fcy, tcx, tip_y - thickness, thickness, line_color)
             else:
-                # Different levels → vertical or L-shape from bottom of source
-                sx = fcx
+                # different levels → straight or L-shape from bottom of source
                 sy = fcy + nh / 2
-                ex = tcx
                 ey = tip_y - thickness
-                if abs(sx - ex) < 0.01:
+                if abs(fcx - tcx) < 0.01:
                     if sy <= ey:
-                        add_rect(slide, sx - thickness / 2, sy, thickness, ey - sy, fill_rgb=line_color)
+                        add_rect(slide, fcx - thickness / 2, sy, thickness, ey - sy, fill_rgb=line_color)
                 else:
-                    mid_y = (sy + ey) / 2
-                    if sy <= mid_y:
-                        add_rect(slide, sx - thickness / 2, sy, thickness, mid_y - sy, fill_rgb=line_color)
-                    x_lo, x_hi = min(sx, ex), max(sx, ex)
-                    add_rect(slide, x_lo, mid_y - thickness / 2, x_hi - x_lo, thickness, fill_rgb=line_color)
-                    if mid_y <= ey:
-                        add_rect(slide, ex - thickness / 2, mid_y, thickness, ey - mid_y, fill_rgb=line_color)
+                    _draw_l_connector(slide, fcx, sy, tcx, ey, thickness, line_color)
 
-            # Arrowhead: triangle with apex pointing down, placed at tip_y
             try:
                 ps = 0.1
                 tri = slide.shapes.add_shape(
                     _TRIANGLE,
-                    Inches(ex - ps / 2), Inches(tip_y - ps),
+                    Inches(tcx - ps / 2), Inches(tip_y - ps),
                     Inches(ps), Inches(ps),
                 )
-                tri.fill.solid()
-                tri.fill.fore_color.rgb = RGBColor(*line_color)
-                tri.line.fill.background()
+                apply_fill(tri, line_color)
+                apply_no_line(tri)
                 tri.rotation = 180  # apex down
             except Exception:
                 pass
 
-            # Edge label at midpoint
             label_text = edge.get("label", "")
             if label_text:
                 lx = (fcx + tcx) / 2 - 0.25
@@ -224,7 +218,6 @@ class FlowchartDiagram(Component):
                     alignment=PP_ALIGN.CENTER,
                 )
 
-        # Draw nodes on top of connectors
         for n in self.nodes:
             nid = n["id"]
             label = n.get("label", nid)
@@ -234,32 +227,26 @@ class FlowchartDiagram(Component):
                 continue
 
             cx, cy = node_cx[nid], node_cy[nid]
-            nx_pos = cx - nw / 2
-            ny_pos = cy - nh / 2
-
             shape_id = _SHAPE_FOR_TYPE.get(ntype, _SHAPE_RECT)
 
             try:
                 shape = slide.shapes.add_shape(
                     shape_id,
-                    Inches(nx_pos), Inches(ny_pos),
+                    Inches(cx - nw / 2), Inches(cy - nh / 2),
                     Inches(nw), Inches(nh),
                 )
 
                 if ntype == "terminal":
-                    shape.fill.solid()
-                    shape.fill.fore_color.rgb = RGBColor(*t.ACCENT)
-                    shape.line.fill.background()
+                    apply_fill(shape, t.ACCENT)
+                    apply_no_line(shape)
                     text_color = t.BG
                 elif ntype == "decision":
-                    shape.fill.solid()
-                    shape.fill.fore_color.rgb = RGBColor(*t.ACCENT_SOFT)
+                    apply_fill(shape, t.ACCENT_SOFT)
                     shape.line.width = Pt(1.0)
                     shape.line.color.rgb = RGBColor(*t.ACCENT)
                     text_color = t.TEXT_PRIMARY
                 else:
-                    shape.fill.solid()
-                    shape.fill.fore_color.rgb = RGBColor(*t.SURFACE)
+                    apply_fill(shape, t.SURFACE)
                     shape.line.width = Pt(1.0)
                     shape.line.color.rgb = RGBColor(*t.ACCENT)
                     text_color = t.TEXT_PRIMARY

@@ -254,6 +254,8 @@ COMPONENT_SCHEMA: dict[str, dict] = {
     },
 }
 
+_COMPONENT_SCHEMA_JSON = json.dumps(COMPONENT_SCHEMA, indent=2)
+
 
 _INSTRUCTION_TEXT = """\
 You are a PowerPoint slide layout engine. Given a content brief, you select the \
@@ -321,8 +323,7 @@ def generate_slide(
             "Install it with: pip install anthropic"
         ) from exc
 
-    schema_json = json.dumps(COMPONENT_SCHEMA, indent=2)
-    client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+    client = anthropic.Anthropic(api_key=api_key)
 
     user_message = (
         f"Slide height budget: {height:.1f} inches\n"
@@ -340,7 +341,7 @@ def generate_slide(
             },
             {
                 "type": "text",
-                "text": f"## Available Component Schema\n{schema_json}",
+                "text": f"## Available Component Schema\n{_COMPONENT_SCHEMA_JSON}",
                 "cache_control": {"type": "ephemeral"},
             },
         ],
