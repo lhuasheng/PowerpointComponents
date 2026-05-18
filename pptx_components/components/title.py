@@ -112,8 +112,18 @@ class SectionHeader(Component):
             from pptx.util import Inches, Pt
             from pptx.dml.color import RGBColor
             from pptx.enum.text import PP_ALIGN
+            from pptx.oxml.ns import qn
             tf = pill.text_frame
             tf.word_wrap = False
+            tf.margin_left = Inches(0.05)
+            tf.margin_right = Inches(0.05)
+            tf.margin_top = Inches(0)
+            tf.margin_bottom = Inches(0)
+            # Vertically center the text inside the pill
+            txBody = pill._element.txBody
+            bodyPr = txBody.find(qn('a:bodyPr'))
+            if bodyPr is not None:
+                bodyPr.set('anchor', 'ctr')
             p = tf.paragraphs[0]
             p.alignment = PP_ALIGN.CENTER
             run = p.add_run()

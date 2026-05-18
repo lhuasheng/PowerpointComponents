@@ -89,6 +89,10 @@ class MetricCard(Component):
 class BigStat(Component):
     """Hero statistic — large centered number for single-focus slides."""
 
+    _VALUE_H = 0.75
+    _LABEL_H = 0.4
+    _DESC_H = 0.4
+
     def __init__(self, value: str, label: str, description: str | None = None):
         self.value = value
         self.label = label
@@ -96,7 +100,14 @@ class BigStat(Component):
 
     @property
     def min_height(self) -> float:
-        return 1.8
+        return self.min_height_for()
+
+    def min_height_for(self, theme: Theme | None = None) -> float:
+        t = _resolve(theme)
+        h = t.MD + self._VALUE_H + t.XS + self._LABEL_H
+        if self.description:
+            h += t.XS + self._DESC_H
+        return h + t.SM  # bottom breathing room
 
     def render(self, slide, x: float, y: float, width: float, height: float,
                theme: Theme | None = None) -> None:
@@ -104,26 +115,23 @@ class BigStat(Component):
         pad = t.MD
 
         # Value
-        value_h = 0.75
         value_y = y + pad
-        add_text_box(slide, x, value_y, width, value_h,
+        add_text_box(slide, x, value_y, width, self._VALUE_H,
                      self.value, t.DISPLAY, bold=True,
                      color_rgb=t.ACCENT, font_name="Calibri Light",
                      alignment=PP_ALIGN.CENTER)
 
         # Label
-        label_y = value_y + value_h + t.XS
-        label_h = 0.4
-        add_text_box(slide, x, label_y, width, label_h,
+        label_y = value_y + self._VALUE_H + t.XS
+        add_text_box(slide, x, label_y, width, self._LABEL_H,
                      self.label, t.SUBHEADING, bold=False,
                      color_rgb=t.TEXT_SECONDARY, font_name="Calibri",
                      alignment=PP_ALIGN.CENTER)
 
         # Description
         if self.description:
-            desc_y = label_y + label_h + t.XS
-            desc_h = 0.4
-            add_text_box(slide, x, desc_y, width, desc_h,
+            desc_y = label_y + self._LABEL_H + t.XS
+            add_text_box(slide, x, desc_y, width, self._DESC_H,
                          self.description, t.CAPTION,
                          color_rgb=t.TEXT_MUTED, font_name="Calibri",
                          alignment=PP_ALIGN.CENTER)

@@ -46,9 +46,9 @@ class CalloutBox(Component):
         # Background
         add_rect(slide, x, y, width, height, fill_rgb=fill_rgb, radius=0.04)
 
-        # Left accent bar uses theme accent for visible contrast.
+        # Left bar uses the callout's text color for style-specific contrast.
         bar_w = 0.06
-        add_rect(slide, x, y, bar_w, height, fill_rgb=t.ACCENT)
+        add_rect(slide, x, y, bar_w, height, fill_rgb=text_rgb)
 
         content_x = x + bar_w + pad
         content_w = width - bar_w - pad - t.XS

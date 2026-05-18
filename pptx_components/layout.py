@@ -152,13 +152,20 @@ class Grid(Component):
         t = _resolve(theme)
         col_gap = self._col_gap_val(t)
         row_gap = self._row_gap_val(t)
-        n = len(self.components)
-        cursor_y = y
 
+        # Compute a uniform column width based on the full column count so
+        # partial last rows don't get wider cells than full rows.
+        available = width - col_gap * (self.cols - 1)
+        col_w = available / self.cols
+
+        cursor_y = y
         for row_idx in range(self._row_count()):
             chunk = self.components[row_idx * self.cols: (row_idx + 1) * self.cols]
             row_h = self._max_row_height_for(chunk, t)
-            Row(*chunk, gap=col_gap).render(slide, x, cursor_y, width, row_h, theme=t)
+            cursor_x = x
+            for comp in chunk:
+                comp.render(slide, cursor_x, cursor_y, col_w, row_h, theme=t)
+                cursor_x += col_w + col_gap
             cursor_y += row_h + row_gap
 
 
