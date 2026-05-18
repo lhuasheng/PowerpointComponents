@@ -55,6 +55,14 @@ from pptx_components.components.radar_chart import RadarChart
 from pptx_components.components.text_card import TextCard
 from pptx_components.components.scatter import ScatterPlot
 from pptx_components.components.grouped_table import GroupedTable
+from pptx_components.components.flowchart import FlowchartDiagram
+from pptx_components.components.dynamic import (
+    ComponentSpec,
+    render_specs,
+    generate_slide,
+    register_component,
+    COMPONENT_REGISTRY,
+)
 from pptx_components.components.narrative import (
     NarrativePage,
     NarrativeTwoColumnPage,
@@ -70,6 +78,32 @@ from pptx_components.reverse import (
     reverse_pptx_to_script,
 )
 from pptx_components.master_builder import MasterPresentation, MasterSlide
+
+# ── Populate the dynamic registry after all component imports ─────────────────
+def _populate_dynamic_registry() -> None:
+    _reg = {
+        "TitleBlock": TitleBlock,
+        "SectionHeader": SectionHeader,
+        "MetricCard": MetricCard,
+        "KPIGrid": KPIGrid,
+        "BarChart": BarChart,
+        "LineChart": LineChart,
+        "PieChart": PieChart,
+        "DonutChart": DonutChart,
+        "ListBlock": ListBlock,
+        "CalloutBox": CalloutBox,
+        "QuoteBlock": QuoteBlock,
+        "TextCard": TextCard,
+        "ProgressBar": ProgressBar,
+        "StepFlow": StepFlow,
+        "FeatureGrid": FeatureGrid,
+        "DataTable": DataTable,
+        "FlowchartDiagram": FlowchartDiagram,
+    }
+    for name, cls in _reg.items():
+        register_component(name, cls)
+
+_populate_dynamic_registry()
 
 try:
     __version__ = _package_version("pptx-components")
@@ -99,4 +133,6 @@ __all__ = [
     "NarrativePage", "NarrativeTwoColumnPage", "LongNarrativeBlock", "paginate_narrative", "build_narrative_slides",
     "export_slides",
     "ReverseWarning", "ReverseResult", "PresentationReverser", "reverse_pptx_to_script",
+    "FlowchartDiagram",
+    "ComponentSpec", "render_specs", "generate_slide", "register_component", "COMPONENT_REGISTRY",
 ]
