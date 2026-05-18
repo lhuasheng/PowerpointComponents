@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/user/PowerpointComponents && changed=$(git diff --name-only HEAD 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null) && echo \"$changed\" | grep -q '\\.pptx$' && SKIP_REGEN=1 bash scripts/update_pptx_screenshots.sh 2>/dev/null || true",
+            "timeout": 120,
+            "statusMessage": "Updating PPTX screenshots..."
+          }
+        ]
+      }
+    ]
+  }
+}
