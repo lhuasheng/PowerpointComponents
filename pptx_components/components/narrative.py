@@ -346,14 +346,23 @@ class NarrativeTwoColumnPage(Component):
             font_name="Calibri",
         )
 
+        _NOTE_H = 0.58
+        _NOTE_MARGIN = 0.08
+
         if self.sidebar_points:
             points_text = "\n".join(f"- {p}" for p in self.sidebar_points[:6])
+            # Clamp height so points don't overlap the note below.
+            if self.sidebar_note:
+                note_top = cursor_y + content_h - _NOTE_H - _NOTE_MARGIN
+                points_h = max(0.2, note_top - cursor_y - 0.34 - _NOTE_MARGIN)
+            else:
+                points_h = max(0.2, content_h - 0.34 - _NOTE_MARGIN)
             add_text_box(
                 slide,
                 rail_x + 0.12,
                 cursor_y + 0.34,
                 right_w - pad - 0.24,
-                content_h * 0.66,
+                points_h,
                 points_text,
                 t.CAPTION,
                 color_rgb=t.TEXT_SECONDARY,
@@ -365,9 +374,9 @@ class NarrativeTwoColumnPage(Component):
             add_text_box(
                 slide,
                 rail_x + 0.12,
-                cursor_y + content_h - 0.7,
+                cursor_y + content_h - _NOTE_H - _NOTE_MARGIN,
                 right_w - pad - 0.24,
-                0.58,
+                _NOTE_H,
                 self.sidebar_note,
                 t.CAPTION,
                 bold=True,

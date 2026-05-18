@@ -63,7 +63,7 @@ class DataTable(Component):
 
             from pptx.util import Inches
             tf = bg.text_frame
-            tf.word_wrap = False
+            tf.word_wrap = True
             from pptx.util import Pt
             tf.margin_left = Inches(t.SM)
             tf.margin_top = Inches(t.XS)
